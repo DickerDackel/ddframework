@@ -1,0 +1,68 @@
+[project]
+name = "FIXME"
+description = "FIXME"
+version = "0.0.1"
+readme = "README.md"
+
+authors = [
+    { name="Michael Lamertz", email="michael.lamertz@gmail.com" }
+]
+
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Games/Entertainment",
+    "Topic :: Software Development :: Libraries :: pygame",
+]
+
+dependencies = [
+    "pygame-ce",
+    "pgcooldown @ git+https://github.com/dickerdackel/pgcooldown",
+]
+
+[project.scripts]
+FIXME = "package.module:main"
+
+[project.urls]
+homepage = "https://github.com/dickerdackel/FIXME"
+bugtracker = "https://github.com/DickerDackel/FIXME/issues"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+addopts = "-rA -s --cov-report term-missing -s"
+testpaths = [
+    "tests",
+]
+
+[tool.ruff]
+ignore = [
+    "E501",
+    "E701",
+    "E731",
+    "E741",
+]
+line-length = 100
+select = [
+    # defaults
+    "B",
+    "C",
+    "E",
+    "F",
+    "I",
+    "W",
+    # Mine
+    "N",
+    "ANN",  # flake8-annotations
+    "PL",  # pylint
+    "FIX",  # flake8-fixme
+    "ERA",  # eradicate (commented out code)
+]
+
+[tool.ruff.lint.isort]
+force-sort-within-sections = false
+known-third-party = ["pygame", "numpy", "tinyecs", "patternegine", "pgcooldown", "rpeasings"]
+lines-between-types = 1
