@@ -1,0 +1,154 @@
+import logging
+
+from abc import ABC, abstractmethod
+from enum import IntEnum
+from typing import NamedTuple
+
+import pygame
+
+from .statemachine import StateMachine
+
+__all__ = ['App', 'GameState', 'StackPermissions', 'StateExit']
+
+
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s %(levelname)-12s  %(message)s',
+                    datefmt='%F %T')
+
+
+class StackPermissions(IntEnum):
+    NONE = 0
+    UPDATE = 1
+    DRAW = 2
+    EVENTS = 4
+
+
+class StateExit(Exception):
+    pass
+
+
+class GameState(ABC):
+    def __init__(self, app):
+        self.app = app
+
+    def reset(self):
+        pass
+
+    def restart(self, result):
+        pass
+
+    def dispatch_event(self, e):
+        if (e.type == pygame.QUIT or
+                e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE):
+            raise StateExit(-1)
+
+    @abstractmethod
+    def update(self, dt):
+        pass
+
+    @abstractmethod
+    def draw(self, screen):
+        pass
+
+
+class StackEntry(NamedTuple):
+    state: GameState
+    passthrough: int
+
+
+class App:
+    def __init__(self, title, screen, fps, bgcolor=None):
+        self.title = title
+        self.screen = pygame.display.set_mode(screen.size, vsync=1)
+        self.fps = fps
+        self.bgcolor = bgcolor
+
+        pygame.init()
+        pygame.display.set_caption(title)
+
+        self.rect = screen.copy()
+        self.clock = pygame.time.Clock()
+        self.dt_max = 3 / fps
+        self.running = True
+
+        self.state_stack = []
+        self.state_machine = StateMachine()
+        self.state_walker = None
+
+    def run(self):
+        assert self.state_walker is not None
+
+        self.state_stack.append(StackEntry(next(self.state_walker), 0))
+        self.state_stack[-1].state.reset()
+
+        while self.state_stack:
+            # dt = min(self.clock.tick(self.fps) / 1000.0, self.dt_max)
+            dt = min(self.clock.tick() / 1000.0, self.dt_max)
+
+            if self.bgcolor is not None:
+                self.screen.fill(self.bgcolor)
+
+            try:
+                self.dispatch_events()
+                self.update(dt)
+                self.draw(self.screen)
+            except StateExit as e:
+                self.transition(e.args[0])
+
+            pygame.display.flip()
+
+    def dispatch_events(self):
+        for e in pygame.event.get():
+            states = (entry.state
+                      for i, entry in enumerate(self.state_stack[:-1])
+                      if self.state_stack[i + 1].passthrough & StackPermissions.EVENTS)
+            for state in states:
+                state.dispatch_event(e)
+
+            if (res := self.state_stack[-1].state.dispatch_event(e)):
+                raise StateExit(res)
+
+    def update(self, dt):
+        states = (entry.state
+                  for i, entry in enumerate(self.state_stack[:-1])
+                  if self.state_stack[i + 1].passthrough & StackPermissions.UPDATE)
+        for state in states:
+            state.update(dt)
+
+        if (res := self.state_stack[-1].state.update(dt)):
+            raise StateExit(res)
+
+    def draw(self, screen):
+        states = (entry.state
+                  for i, entry in enumerate(self.state_stack[:-1])
+                  if self.state_stack[i + 1].passthrough & StackPermissions.DRAW)
+        for state in states:
+            state.draw(screen)
+
+        if (res := self.state_stack[-1].state.draw(screen)):
+            raise StateExit(res)
+
+    def push(self, substate, passthrough=StackPermissions.NONE):
+        self.state_stack.append(StackEntry(substate, passthrough))
+        self.state_stack[-1].state.reset()
+
+    def is_stacked(self, state):
+        return state in [_.state for _ in self.state_stack[:-1]]
+
+    def create_state_walker(self, node):
+        self.state_walker = self.state_machine.walker(node)
+
+    def transition(self, index):
+        if index is None or index < 0:
+            self.state_stack.pop(-1)
+            if not self.state_stack:
+                return
+            self.state_stack[-1].state.restart(index)
+        else:
+            # preserve passthrough if we're on a stacked state that has a
+            # transition
+            passthrough = self.state_stack[-1].passthrough
+            followup = StackEntry(self.state_walker.send(index), passthrough)
+
+            self.state_stack[-1] = followup
+            self.state_stack[-1].state.reset()

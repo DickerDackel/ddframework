@@ -1,6 +1,6 @@
 [project]
-name = "FIXME"
-description = "FIXME"
+name = "ddframework"
+description = "ddframework"
 version = "0.0.1"
 readme = "README.md"
 
@@ -18,15 +18,15 @@ classifiers = [
 
 dependencies = [
     "pygame-ce",
-    "pgcooldown @ git+https://github.com/dickerdackel/pgcooldown",
+    "pgcooldown",
 ]
 
 [project.scripts]
-FIXME = "package.module:main"
+sampleapp = "sampleapp.main:main"
 
 [project.urls]
-homepage = "https://github.com/dickerdackel/FIXME"
-bugtracker = "https://github.com/DickerDackel/FIXME/issues"
+homepage = "https://github.com/dickerdackel/ddframework"
+bugtracker = "https://github.com/DickerDackel/ddframework/issues"
 
 [build-system]
 requires = ["setuptools"]
@@ -40,27 +40,15 @@ testpaths = [
 
 [tool.ruff]
 ignore = [
+    # "ANN",
     "E501",
     "E701",
     "E731",
     "E741",
+    "I001",
+    "PLR2004",
 ]
 line-length = 100
-select = [
-    # defaults
-    "B",
-    "C",
-    "E",
-    "F",
-    "I",
-    "W",
-    # Mine
-    "N",
-    "ANN",  # flake8-annotations
-    "PL",  # pylint
-    "FIX",  # flake8-fixme
-    "ERA",  # eradicate (commented out code)
-]
 
 [tool.ruff.lint.isort]
 force-sort-within-sections = false
