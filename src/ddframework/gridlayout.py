@@ -4,10 +4,10 @@ from dataclasses import dataclass
 
 
 @dataclass
-class ScreenGrid:
+class GridLayout:
     """Split the screen into cells of fixed size
 
-        TextGrid(canvas_rect, cells_x, cells_y, margin=0)
+        GridLayout(canvas_rect, cells_x, cells_y, margin=0)
 
     Can return either cell positions as Rect, or grid positions as Vector2
 
@@ -36,7 +36,7 @@ class ScreenGrid:
     def __call__(self, x, y, w=1, h=1):
         """Return a rectangle starting at the x, y cell coordinates, spanning over w, h cells
 
-            grid = Grid(canvas, 10, 5)
+            grid = GridLayout(canvas, 10, 5)
             rect = grid.cell(3, 3, 2, 1)
 
 
