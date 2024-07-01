@@ -22,7 +22,7 @@ dependencies = [
 ]
 
 [project.scripts]
-sampleapp = "sampleapp.main:main"
+sampleapp = "sampleapp.__main__:main"
 
 [project.urls]
 homepage = "https://github.com/dickerdackel/ddframework"
