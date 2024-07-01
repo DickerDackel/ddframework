@@ -22,11 +22,11 @@ def main():
         highscores=Highscores('Highscores', app, lifetime=5),
         game=Game('Game', app, lifetime=5),
     )
-    app.state_machine.add(states.splash, (states.title,))
-    app.state_machine.add(states.title, (states.demo, states.game))
-    app.state_machine.add(states.demo, (states.highscores, states.game))
-    app.state_machine.add(states.highscores, (states.title, states.game))
-    app.state_machine.add(states.game, (states.highscores, ))
+    app.state_machine.add(states.splash, states.title)
+    app.state_machine.add(states.title, states.demo, states.game)
+    app.state_machine.add(states.demo, states.highscores, states.game)
+    app.state_machine.add(states.highscores, states.title, states.game)
+    app.state_machine.add(states.game, states.highscores)
     app.create_state_walker(states.splash)
 
     app.run()

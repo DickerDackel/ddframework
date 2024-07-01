@@ -11,10 +11,7 @@ class StateMachine:
     def __init__(self):
         self.states = {}
 
-    def add(self, name, followups):
-        if not isinstance(followups, (tuple, list)):
-            raise TypeError('followups must be sequence type')
-
+    def add(self, name, *followups):
         self.states[name] = followups
 
     def walker(self, entry):
