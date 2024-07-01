@@ -21,6 +21,8 @@ class StackPermissions(IntEnum):
     UPDATE = 1
     DRAW = 2
     EVENTS = 4
+    DRUPDATE = 3
+    ALL = 7
 
 
 class StateExit(Exception):
