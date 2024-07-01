@@ -105,8 +105,7 @@ class App:
             for state in states:
                 state.dispatch_event(e)
 
-            if (res := self.state_stack[-1].state.dispatch_event(e)):
-                raise StateExit(res)
+            self.state_stack[-1].state.dispatch_event(e)
 
     def update(self, dt):
         states = (entry.state
@@ -115,8 +114,7 @@ class App:
         for state in states:
             state.update(dt)
 
-        if (res := self.state_stack[-1].state.update(dt)):
-            raise StateExit(res)
+        self.state_stack[-1].state.update(dt)
 
     def draw(self, screen):
         states = (entry.state
@@ -125,8 +123,7 @@ class App:
         for state in states:
             state.draw(screen)
 
-        if (res := self.state_stack[-1].state.draw(screen)):
-            raise StateExit(res)
+        self.state_stack[-1].state.draw(screen)
 
     def push(self, substate, passthrough=StackPermissions.NONE):
         self.state_stack.append(StackEntry(substate, passthrough))
