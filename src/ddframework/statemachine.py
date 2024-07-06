@@ -35,7 +35,6 @@ class StateMachine:
             node = next_node
 
 
-
     def __repr__(self):
         return (f'StateMachine({id(self)}\n' +
                 '\n'.join([f'    {k}: {v}' for k, v in self.states.items()]) +
