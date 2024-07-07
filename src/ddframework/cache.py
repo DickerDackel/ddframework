@@ -86,7 +86,6 @@ def add_baseimage(name, img):
 def fetch(basename, angle=0, scale=1, alpha=255):
     key = image_key(basename, angle=angle, scale=scale, alpha=alpha)
     if key not in _image:
-        print(f'New: {key}')
         base_key = image_key(basename)
         img = _image[base_key]
         if angle:
