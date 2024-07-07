@@ -85,7 +85,7 @@ class App:
 
         while self.state_stack:
             # dt = min(self.clock.tick(self.fps) / 1000.0, self.dt_max)
-            dt = min(self.clock.tick() / 1000.0, self.dt_max)
+            dt = min(self.clock.tick(self.fps) / 1000.0, self.dt_max)
 
             if self.bgcolor is not None:
                 self.screen.fill(self.bgcolor)
