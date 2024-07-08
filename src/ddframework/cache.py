@@ -89,7 +89,7 @@ def add_baseimage(name, img):
 def fetch(basename, angle=0, scale=1, alpha=255):
     key = image_key(basename, angle=angle, scale=scale, alpha=alpha)
     if key not in _image:
-        logging.critical(f'generating {key}')
+        logging.debug(f'generating {key}')
         base_key = image_key(basename)
         img = _image[base_key]
         if debug:
