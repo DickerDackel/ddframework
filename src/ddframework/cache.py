@@ -1,7 +1,10 @@
+import logging
+
 import pygame
 
 chunk_angle = 10
 chunk_alpha = 16
+debug = False
 
 _image = {}
 _base = {}
@@ -70,7 +73,7 @@ def chunk(v, size):
 
 
 def image_key(basename, *, angle=0, scale=1, alpha=255):
-    if chunk_angle: angle = chunk(angle, chunk_angle)
+    if chunk_angle: angle = chunk(angle % 360, chunk_angle)
     if chunk_alpha: alpha = chunk(alpha, chunk_alpha)
 
     return f'{basename}-{scale}-{angle}-{alpha}'
@@ -86,16 +89,26 @@ def add_baseimage(name, img):
 def fetch(basename, angle=0, scale=1, alpha=255):
     key = image_key(basename, angle=angle, scale=scale, alpha=alpha)
     if key not in _image:
+        logging.critical(f'generating {key}')
         base_key = image_key(basename)
         img = _image[base_key]
+        if debug:
+            pygame.draw.rect(img, 'yellow', img.get_rect(), width=1)
+
         if angle:
             img = pygame.transform.rotate(img, angle)
+            if debug:
+                pygame.draw.rect(img, 'cyan', img.get_rect(), width=1)
+
         if scale != 1:
             img = pygame.transform.scale_by(img, scale)
-        _image[key] = img
-        if alpha != 255:
-            _image[key].set_alpha(alpha)
+            if debug:
+                pygame.draw.rect(img, 'magenta', img.get_rect(), width=1)
 
+        if alpha != 255:
+            img.set_alpha(alpha)
+
+        _image[key] = img
         _base[_image[key]] = _image[base_key]
     return _image[key]
 
