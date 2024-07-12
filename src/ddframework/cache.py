@@ -10,64 +10,6 @@ _image = {}
 _base = {}
 
 
-class CachedRSAI(pygame.sprite.Sprite):
-    """A cached rotated/scaled/alpha-blended image"""
-
-    def __init__(self, img_id, pos, cache, angle=0, scale=1, alpha=255):
-        super().__init__()
-        self.id = img_id
-        self.pos = pos
-        self.cache = cache
-        self._angle = angle
-        self._scale = scale
-        self._alpha = alpha
-
-        self._image = self.cache.fetch(self.id, self.angle, self.scale, self.alpha)
-        self.dirty = False
-
-    @property
-    def angle(self): return self._angle
-
-    @angle.setter
-    def angle(self, val):
-        self.dirty = True
-        self._angle = val
-        return self._angle
-
-    @property
-    def scale(self): return self._scale
-
-    @scale.setter
-    def scale(self, val):
-        self.dirty = True
-        self._scale = val
-        return self._scale
-
-    @property
-    def alpha(self): return self._alpha
-
-    @alpha.setter
-    def alpha(self, val):
-        self.dirty = True
-        self._alpha = val
-        return self._alpha
-
-    @property
-    def image(self):
-        if self.dirty:
-            self._image = self.cache.fetch(self.id, self.angle, self.scale, self.alpha)
-            self.dirty = False
-        return self._image
-
-    @property
-    def rect(self):
-        return self._image.get_rect(center=self.pos)
-
-    @rect.setter
-    def rect(self, r):
-        self.pos = r.center
-
-
 def chunk(v, size):
     return size * ((v + size // 2) // size)
 
@@ -79,7 +21,7 @@ def image_key(basename, *, angle=0, scale=1, alpha=255):
     return f'{basename}-{scale}-{angle}-{alpha}'
 
 
-def add_baseimage(name, img):
+def add_baseimage(img, name):
     key = image_key(name)
     if key not in _image:
         _image[key] = img
@@ -117,4 +59,4 @@ def base(image):
     return _base[image]
 
 
-__all__ = [CachedRSAI, image_key, add_baseimage, fetch, base]
+__all__ = [image_key, add_baseimage, fetch, base]

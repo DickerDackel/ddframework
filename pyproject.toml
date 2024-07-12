@@ -17,8 +17,9 @@ classifiers = [
 ]
 
 dependencies = [
-    "pygame-ce",
     "pgcooldown",
+    "pygame-ce",
+    "pyglm",
 ]
 
 [project.scripts]
