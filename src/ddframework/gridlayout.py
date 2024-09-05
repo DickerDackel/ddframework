@@ -35,7 +35,7 @@ class GridLayout:
         self.steps_x = (self.canvas.width - 2 * self.margin_x) / self.cells_x 
         self.steps_y = (self.canvas.height - 2 * self.margin_y) / self.cells_y
 
-    def _validate(x, y, w, h):
+    def _validate(self, x, y, w, h):
         return (w > 0 and h > 0 and x + w <= self.cells_x and y + h < self.cells_y)
 
     def __call__(self, x, y, w=1, h=1):
