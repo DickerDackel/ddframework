@@ -5,6 +5,7 @@ from enum import IntEnum
 from typing import NamedTuple
 
 import pygame
+import pygame._sdl2 as sdl2
 
 from .statemachine import StateMachine
 
@@ -40,16 +41,16 @@ class GameState(ABC):
         pass
 
     def dispatch_event(self, e):
-        if (e.type == pygame.QUIT or
-                e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE):
-            raise StateExit(-1)
+        if (e.type == pygame.QUIT
+                or e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE):
+            raise StateExit(-999)
 
     @abstractmethod
     def update(self, dt):
         pass
 
     @abstractmethod
-    def draw(self, screen):
+    def draw(self):
         pass
 
 
@@ -60,13 +61,10 @@ class StackEntry(NamedTuple):
 
 class App:
     def __init__(self, title, screen, fps, bgcolor=None):
-        self.title = title
-        self.screen = pygame.display.set_mode(screen.size, vsync=1)
+        self.window = pygame.Window(title=title, size=screen.size)
+        self.renderer = sdl2.Renderer(self.window)
         self.fps = fps
         self.bgcolor = bgcolor
-
-        pygame.init()
-        pygame.display.set_caption(title)
 
         self.rect = screen.copy()
         self.clock = pygame.time.Clock()
@@ -88,16 +86,18 @@ class App:
             dt = min(self.clock.tick(self.fps) / 1000.0, self.dt_max)
 
             if self.bgcolor is not None:
-                self.screen.fill(self.bgcolor)
+                self.renderer.draw_color = self.bgcolor
+
+            self.renderer.clear()
 
             try:
                 self.dispatch_events()
                 self.update(dt)
-                self.draw(self.screen)
+                self.draw()
             except StateExit as e:
                 self.transition(e.args[0])
 
-            pygame.display.flip()
+            self.renderer.present()
 
     def dispatch_events(self):
         for e in pygame.event.get():
@@ -118,14 +118,14 @@ class App:
 
         self.state_stack[-1].state.update(dt)
 
-    def draw(self, screen):
+    def draw(self):
         states = (entry.state
                   for i, entry in enumerate(self.state_stack[:-1])
                   if self.state_stack[i + 1].passthrough & StackPermissions.DRAW)
         for state in states:
-            state.draw(screen)
+            state.draw()
 
-        self.state_stack[-1].state.draw(screen)
+        self.state_stack[-1].state.draw()
 
     def push(self, substate, passthrough=StackPermissions.NONE):
         self.state_stack.append(StackEntry(substate, passthrough))

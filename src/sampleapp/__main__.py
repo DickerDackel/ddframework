@@ -16,11 +16,11 @@ def main():
     pygame.mouse.set_relative_mode(True)
 
     states = SimpleNamespace(
-        splash=Splash('Splash Screen', app, lifetime=5),
-        title=Title('Title', app, lifetime=5),
-        demo=Demo('Demo', app, lifetime=5),
-        highscores=Highscores('Highscores', app, lifetime=5),
-        game=Game('Game', app, lifetime=5),
+        splash=Splash(app),
+        title=Title(app),
+        demo=Demo(app),
+        highscores=Highscores(app),
+        game=Game(app),
     )
     app.state_machine.add(states.splash, states.title)
     app.state_machine.add(states.title, states.demo, states.game)

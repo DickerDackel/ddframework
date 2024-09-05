@@ -1,38 +1,58 @@
-from types import SimpleNamespace
-
 import pygame
 
-from ddframework import GameState, StateExit, CountdownLabel
+from pgcooldown import Cooldown
+from ddframework.app import StateExit
 
 import sampleapp.globals as G
 
+from sampleapp.states.bannerstate import BannerState
 
-class Countdown(GameState):
-    def __init__(self, *args, duration=3, **kwargs):
-        super().__init__(*args, **kwargs)
 
-        self.groups = SimpleNamespace(
-            countdown = pygame.sprite.Group(),
-        )
+class Countdown(BannerState):
+    def __init__(self, app, *args, duration=3, **kwargs):
 
-        style = G.LABEL_STYLE.copy(color='lightgreen',
-                                   border_color='lightgreen', border=1,
-                                   margin=16, padding=(16, 32), bgcolor='black',
-                                   border_radius=20)
-        self.countdown = CountdownLabel(duration, G.SCREEN.center, style)
-        self.groups.countdown.add(self.countdown)
+        styles = (G.BANNER_STYLE.copy(color=G.COLOR.secondary,
+                                      font=G.FONT.huger,
+                                      border_color=G.COLOR.default, border=10,
+                                      margin=16, padding=(16, 32),
+                                      bgcolor='black', border_radius=20), )
+        super().__init__(app, '', styles=styles, pos=G.SCREEN.center)
+
+        self.digits = None
+        self.cooldown = Cooldown(1)
 
     def reset(self):
         super().reset()
-        self.countdown.reset()
-        self.groups.countdown.add(self.countdown)
+        self.cooldown.reset()
+        self.digits = iter(['3', '2', '1'])
+        self.textbox.text = next(self.digits)
+
+    def next_digit(self):
+        self.cooldown.reset()
+        try:
+            digit = next(self.digits)
+            self.textbox.text = digit
+        except StopIteration:
+            return None
+
+        return digit
 
     def update(self, dt):
-        super().update(dt)
-        self.groups.countdown.update(dt)
-        if not self.groups.countdown:
-            raise StateExit(None)
+        if self.cooldown.cold():
+            if self.next_digit() is None:
+                raise StateExit(None)
 
-    def draw(self, screen):
-        super().draw(screen)
-        self.groups.countdown.draw(screen)
+        super().update(dt)
+
+    def dispatch_event(self, e):
+        if e.type == pygame.KEYDOWN:
+            if e.key == pygame.K_RETURN:
+                if self.next_digit() is None:
+                    raise StateExit(None)
+
+        super().dispatch_event(e)
+
+    # Needed because Bannerstate fills black
+    def draw(self):
+        self.app.renderer.clear()
+        self.groups.text.draw()

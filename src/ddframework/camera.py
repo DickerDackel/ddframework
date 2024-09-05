@@ -1,5 +1,6 @@
 import pygame
-import ddframework.cache as C
+
+from ddframework.dynamicsprite import DynamicSprite
 
 from glm import vec2, rotate, radians
 
@@ -37,6 +38,9 @@ class Camera:
         rotated = rotate_around_pivot(shifted, self.pos, -self.angle) if self.angle else shifted
         return rotated
 
+    def world_to_camera_angle(self, angle):
+        return -(self.angle + angle)
+
 
 class CameraGroup(pygame.sprite.Group):
     def __init__(self, camera, *args, **kwargs):
@@ -51,27 +55,42 @@ class CameraGroup(pygame.sprite.Group):
         self.bounding_box.center = self.camera.pos
         super().update(*args, **kwargs)
 
-    def draw(self, screen):
+
+    def add(self, *sprites):
+        for s in sprites:
+            if not isinstance(s, DynamicSprite):
+                raise TypeError('CameraGroup requires sprite to be of class DynamicSprite')
+
+        super().add(*sprites)
+
+    def draw(self):
         cam = self.camera
 
-        def get_rotated_image(sprite, cam_angle):
-            angle = -(cam_angle + sprite.rsap.angle)
-            image = C.fetch(sprite.tag, angle=angle)
-            return image
-
         self.bounding_box.center = cam.viewport.center
-        pygame.draw.rect(pygame.display.get_surface(), 'red', self.bounding_box.move_to(topleft=(0, 0)), width=1)
 
-        blits = []
-        for sprite in self.sprites():
-            pos = self.camera.world_to_viewport(sprite.rsap.pos)
+        for s in self.sprites():
+            pos = self.camera.world_to_viewport(s.rsap.pos)
 
-            image = get_rotated_image(sprite, self.camera.angle) if sprite.tag else sprite.image
-            rect = image.get_rect(center=pos)
-
+            rect = s.image.get_rect(center=pos)
             if not self.camera(rect):
                 continue
 
-            blits.append((image, rect))
+            args = {}
 
-        screen.fblits(blits)
+            if s.rsap.scale != 1:
+                args['dstrect'] = s.rect.scale_by(s.rsap.scale)
+            else:
+                args['dstrect'] = s.rect
+
+            if s.rsap.angle != 0:
+                args['angle'] = self.camera.world_to_camera_angle(s.rsap.angle)
+
+            preserve_alpha = None
+            if hasattr(s, 'alpha'):
+                preserve_alpha = s.texture.alpha
+                s.texture.alpha = s.rsap.alpha
+
+            s.texture.draw(**args)
+
+            if preserve_alpha is not None:
+                s.texture.alpha = preserve_alpha

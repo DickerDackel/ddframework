@@ -72,7 +72,7 @@ def mklabel(s, style, alpha=True):
 
 @dataclass
 class LabelStyle:
-    """A class to configure look and behaviour of a TextLabel
+    """A class to configure look and behaviour of a TextBox
 
     The following fields are available in both the `init` and as attributes.
 
@@ -98,9 +98,11 @@ class LabelStyle:
 
     def __post_init__(self):
         if not isinstance(self.margin, Frame):
-            self.margin = frame(self.margin)
+            m = self.margin
+            self.margin = frame(*m) if isinstance(m, Sequence) else frame(m)
         if not isinstance(self.padding, Frame):
-            self.padding = frame(self.padding)
+            p = self.padding
+            self.padding = frame(*p) if isinstance(p, Sequence) else frame(p)
 
     def copy(self, **kwargs):
         """Create a copy of a style
@@ -118,10 +120,45 @@ class LabelStyle:
 
 
 class TextBox:
-    def __init__(self, text, *styles, anchor='center', blink=0):
+    """Create a text surface in a prefined style
+
+    Given a text and one or two styles (See LabelStyle), this class provides a
+    surface of the rendered text.
+
+    Changing the text will automatically update the surface.
+
+    If multiple styles are passed, the text will cycle through them in the
+    `blink` interval (given in seconds).  E.g. one style with text color white
+    and one with text color black will let the text blink.  Another example
+    would be cycling through rainbow colors.
+
+    Methods:
+    --------
+    To access the current surface, just call the instance like a function.
+
+        tb = TextBox('Hello, world', label_style)
+        surface = tb()
+
+    Note:
+    -----
+    All parameters are also available as attributes.
+
+    Parameters / Attributes
+    ----------
+    text: str
+        The initial text to render
+
+    *styles: list[ddframework.textbox.LabelStyle]
+        One or more styles to cycle through.
+
+    blink: float = 0
+        The delay in seconds between style switches.
+
+    """
+
+    def __init__(self, text, styles, blink=0):
         self._text = text
-        self.styles = styles
-        self.anchor = anchor
+        self._styles = styles
 
         self.blinks = []
         self.blink_idx = LerpThing(0, len(styles), blink, repeat=True)
@@ -130,11 +167,12 @@ class TextBox:
 
     def _update_images(self):
         self.blinks = []
-        for style in self.styles:
+        for style in self._styles:
             image = mklabel(self._text, style)
-            rect = image.get_rect()
-            self.blinks.append((image, rect))
-        self.rect = self.blinks[0][1]
+            self.blinks.append(image)
+
+    def __call__(self):
+        return self.blinks[int(self.blink_idx())]
 
     @property
     def text(self):
@@ -146,11 +184,18 @@ class TextBox:
         self._update_images()
 
     @property
-    def image(self):
-        idx = int(self.blink_idx())
+    def styles(self):
+        return self._styles
 
-        old_pos = getattr(self.rect, self.anchor)
-        self.rect = self.blinks[idx][1]
-        setattr(self.rect, self.anchor, old_pos)
+    @styles.setter
+    def styles(self, *styles):
+        self._styles = styles
+        self._update_images()
 
-        return self.blinks[int(idx)][0]
+    @property
+    def blink(self):
+        return self.blink_idx.cooldown.duration
+
+    @blink.setter
+    def blink(self, blink):
+        self.blink_idx.cooldown.reset(blink)

@@ -2,46 +2,49 @@ from types import SimpleNamespace
 
 import pygame
 
-from ddframework import GameState, StateExit, TextLabel
+from ddframework import GameState, StateExit
+from ddframework.textbox import TextBox
+from ddframework.dynamicsprite import RSAP, TGroup
+
 from pgcooldown import Cooldown
 
+import sampleapp.compsys as cs
 import sampleapp.globals as G
 
 
 class BannerState(GameState):
-    def __init__(self, title, *args, lifetime=5, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, app, banner, styles, pos, *args, blink=0,
+                 followup=0, lifetime=None, **kwargs):
+        super().__init__(app)
 
-        self.lifetime = Cooldown(lifetime)
+        self.banner = banner
+        self.followup = followup
+        self.lifetime = Cooldown(G.STATE_CYCLE_TIME) if lifetime else None
 
         self.groups = SimpleNamespace(
-            text=pygame.sprite.Group(),
+            text=TGroup(),
         )
-        self.label = TextLabel(title, (G.SCREEN.centerx, G.SCREEN.centery / 2), G.LABEL_STYLE)
-        self.groups.text.add()
+
+        rsap = RSAP(pos=pos)
+        self.textbox = TextBox(self.banner, styles, blink=blink)
+        self.groups.text.add(cs.TextSprite(self.app.renderer, self.textbox, rsap))
 
     def reset(self):
         if self.lifetime is not None:
             self.lifetime.reset()
 
-        self.groups.text.empty()
-        self.groups.text.add(self.label)
-
-    def dispatch_event(self, e):
-        super().dispatch_event(e)
-        if e.type == pygame.KEYDOWN:
-            if pygame.K_0 <= e.key <= pygame.K_9:
-                raise StateExit(e.key - pygame.K_0)
-            elif e.key == pygame.K_SPACE:
-                raise StateExit(0)
-
     def update(self, dt):
         if self.lifetime is not None and self.lifetime.cold():
-            raise StateExit(0)
-
+            raise StateExit(self.followup)
         self.groups.text.update(dt)
 
-    def draw(self, screen):
-        screen.fill(G.BGCOLOR)
-        self.groups.text.draw(screen)
+    def draw(self):
+        self.app.renderer.draw_color = G.COLOR.background
+        self.app.renderer.clear()
+        self.groups.text.draw()
 
+    def dispatch_event(self, e):
+        if e.type == pygame.KEYDOWN:
+            if e.key == pygame.K_SPACE:
+                raise StateExit(self.followup)
+        super().dispatch_event(e)
