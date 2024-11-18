@@ -10,15 +10,19 @@ class UnknownFollowupIndex(Exception): pass
 class StateMachine:
     def __init__(self):
         self.states = {}
+        self.root = None
 
     def add(self, name, *followups):
+        if self.root is None:
+            self.root = name
+
         self.states[name] = followups
 
-    def walker(self, entry):
-        if entry not in self.states:
+    def walker(self, entry = None):
+        if entry is not None and entry not in self.states:
             raise UnknownNode(f'{entry} not in {self.states}') from KeyError
 
-        node = entry
+        node = entry if entry is not None else self.root
         followup_idx = 0
         while True:
             sent = yield node
