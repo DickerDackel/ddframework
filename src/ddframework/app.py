@@ -62,6 +62,7 @@ class StackEntry(NamedTuple):
 class App:
     def __init__(self, title, screen, fps, bgcolor=None):
         self.window = pygame.Window(title=title, size=screen.size)
+        self.surface = self.window.get_surface()
         self.renderer = sdl2.Renderer(self.window)
         self.fps = fps
         self.bgcolor = bgcolor
@@ -95,7 +96,7 @@ class App:
                 self.update(dt)
                 self.draw()
             except StateExit as e:
-                self.transition(e.args[0])
+                self.transition(e.args[0] if e.args else 0)
 
             self.renderer.present()
 
