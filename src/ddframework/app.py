@@ -62,7 +62,6 @@ class StackEntry(NamedTuple):
 class App:
     def __init__(self, title, screen, fps, bgcolor=None):
         self.window = pygame.Window(title=title, size=screen.size)
-        self.surface = self.window.get_surface()
         self.renderer = sdl2.Renderer(self.window)
         self.fps = fps
         self.bgcolor = bgcolor
