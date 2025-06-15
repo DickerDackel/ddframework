@@ -1,4 +1,5 @@
 import pygame
+import pygame._sdl2 as sdl2
 
 from dataclasses import dataclass
 
@@ -36,7 +37,7 @@ class GridLayout:
         self.steps_y = (self.canvas.height - 2 * self.margin_y) / self.cells_y
 
     def _validate(self, x, y, w, h):
-        return (w > 0 and h > 0 and x + w <= self.cells_x and y + h < self.cells_y)
+        return (w > 0 and h > 0 and x + w <= self.cells_x and y + h <= self.cells_y)
 
     def __call__(self, x, y, w=1, h=1):
         """Return a rectangle starting at the x, y cell coordinates, spanning over w, h cells
@@ -55,7 +56,7 @@ class GridLayout:
 
         Returns
         -------
-        Tuple[pygame.Rect, tuple[int, int]] | None
+        pygame.Rect | None
 
             if the requested segment doesn't completely fits on the canvas,
             None is returned.
@@ -63,37 +64,91 @@ class GridLayout:
         """
         if not self._validate(x, y, w, h): return None
 
-        int_x = int(x)
-        int_y = int(y)
-        frac_x = (x - int_x) * self.steps_x
-        frac_y = (y - int_y) * self.steps_y
-        res_x = self.canvas.left + self.margin_x + int(x) * self.steps_x
-        res_y = self.canvas.left + self.margin_y + int(y) * self.steps_y
-
-        return (pygame.Rect(res_x, res_y, w * self.steps_x, h * self.steps_y),
-                (frac_x, frac_y))
-
-    def position(self, x, y):
-        if not self._validate(x, y, w, h): return None
-
         res_x = self.canvas.left + self.margin_x + x * self.steps_x
         res_y = self.canvas.left + self.margin_y + y * self.steps_y
 
-        return res_x, res_y
+        return pygame.Rect(res_x, res_y, w * self.steps_x, h * self.steps_y)
 
-    def divmod(self, world_x, world_y):
+    def offset(self, x, y, w=1, h=1):
+        """Return the fragment offset within a requested cell
+
+            grid = GridLayout(canvas, 10, 5)
+            rect = grid(3, 3, 2, 1)
+            offset = grid.offset(3, 3, 2, 1)
+
+
+        Parameters
+        ----------
+        x, y: int
+            cell position
+
+        w, h: int
+            width and height in cell steps
+
+        Returns
+        -------
+        Tuple[float, float] | None
+
+            if the requested segment doesn't completely fits on the canvas,
+            None is returned.
+
+        """
+        if not self._validate(x, y, w, h): return None
+
+        frac_x = (x - int(x)) * self.steps_x
+        frac_y = (y - int(x)) * self.steps_y
+
+        return frac_x, frac_y
+
+    position = __call__
+
+    def cell(self, world_x, world_y):
+        """Return the cell position for the given world coordinates.
+
+            grid = GridLayout(canvas, 10, 5)
+            mouse = pygame.mouse.get_pos()
+            cell_x, cell_y = [int for _ in grid.cell(mouse.x, mouse.y)]
+
+        Note:
+
+            The result will be a float that includes the position within the
+            cell in the decimal places.
+
+        Parameters
+        ----------
+        world_x, world_y: int
+            screen position
+
+        Returns
+        -------
+        x, y: float
+            cell coordinates as float
+        """
+
         span_x = world_x - self.margin_x
         span_y = world_y - self.margin_y
 
-        x, frac_x = divmod(span_x, self.steps_x)
-        y, frac_y = divmod(span_y, self.steps_y)
+        x = span_x / self.steps_x
+        y = span_y / self.steps_y
 
-        return x, y, frac_x, frac_y
+        return x, y
 
 
 def debug_grid(screen, grid, color='grey20'):
-    pygame.draw.rect(screen, color, screen.get_rect(), width=1)
-    pygame.draw.rect(screen, color, grid(0, 0, grid.cells_x, grid.cells_y), width=1)
-    for y in range(grid.cells_y):
-        for x in range(grid.cells_x):
-            pygame.draw.rect(screen, color, grid(x, y, 1, 1), width=1)
+    if isinstance(screen, pygame.Surface):
+        pygame.draw.rect(screen, color, screen.get_rect(), width=1)
+        pygame.draw.rect(screen, color, grid(0, 0, grid.cells_x, grid.cells_y), width=1)
+        for y in range(grid.cells_y):
+            for x in range(grid.cells_x):
+                pygame.draw.rect(screen, color, grid(x, y, 1, 1), width=1)
+    elif isinstance(screen, sdl2.Renderer):
+        preserve_color = screen.draw_color
+        screen.draw_color = color
+
+        screen.draw_rect(screen.get_viewport())
+        screen.draw_rect(grid(0, 0, grid.cells_x, grid.cells_y))
+        for y in range(grid.cells_y):
+            for x in range(grid.cells_x):
+                screen.draw_rect(grid(x, y, 1, 1))
+
+        screen.draw_color = preserve_color
