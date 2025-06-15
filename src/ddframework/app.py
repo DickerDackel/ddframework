@@ -61,10 +61,16 @@ class StackEntry(NamedTuple):
 
 class App:
     def __init__(self, title, screen, fps, bgcolor=None):
-        self.window = pygame.Window(title=title, size=screen.size)
-        self.renderer = sdl2.Renderer(self.window)
         self.fps = fps
         self.bgcolor = bgcolor
+
+        self.window = pygame.Window(title=title,
+                                    size=screen.size,
+                                    mouse_grabbed=False,
+                                    keyboard_grabbed=False)
+        self.window.grab_mouse = False
+        self.window.grab_keyboard = False
+        self.renderer = sdl2.Renderer(self.window)
 
         self.rect = screen.copy()
         self.clock = pygame.time.Clock()
