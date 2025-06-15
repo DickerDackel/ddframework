@@ -1,3 +1,5 @@
+__all__ = ['add', 'get', 'get_all']
+
 _cache = {}
 
 def add(texture, name):
@@ -10,5 +12,3 @@ def get(name):
 
 def get_all(names):
     return [get(name) for name in names]
-
-__all__ = ['add', 'get', 'get_all']
