@@ -1,6 +1,4 @@
-
 __all__ = ['StateMachine']
-
 
 class NoRoot(Exception): pass
 class OpenGraph(Exception): pass
@@ -8,8 +6,8 @@ class UnknownNode(Exception): pass
 class UnknownFollowupIndex(Exception): pass
 
 class StateMachine:
-    def __init__(self):
-        self.states = {}
+    def __init__(self, states=None):
+        self.states = {} if states is None else {s[0]: s[1:] for s in states}
 
     def add(self, name, *followups):
         self.states[name] = followups
@@ -21,6 +19,9 @@ class StateMachine:
         node = entry
         followup_idx = 0
         while True:
+            if node is None:
+                break
+
             sent = yield node
             followup_idx = sent or 0
 
@@ -29,7 +30,7 @@ class StateMachine:
             except IndexError:
                 raise UnknownFollowupIndex(node, followup_idx, self.states[node]) from IndexError
 
-            if next_node not in self.states:
+            if next_node is not None and next_node not in self.states:
                 raise OpenGraph((node, next_node))
 
             node = next_node
