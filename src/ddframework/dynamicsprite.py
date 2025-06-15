@@ -42,13 +42,14 @@ class RSAP:
 
 class DynamicSprite(pygame.sprite.Sprite):
     def __init__(self, texture, rsap, *groups, anchor='center'):
+        # pygame.sprite.Sprite initialized rect and image empty
         super().__init__(*groups)
 
         self.image = texture
         self.rsap = rsap  # Camera needs access to this.  Can't be in a comp alone!
         self.anchor = anchor
 
-        self.rect = self.image.get_rect(**{anchor: rsap.pos})
+        self.rect = self.image.get_rect(**{self.anchor: rsap.pos})
 
     def update(self, dt):
         setattr(self.rect, self.anchor, self.rsap.pos)
