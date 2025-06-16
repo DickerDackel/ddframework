@@ -101,7 +101,7 @@ class App:
                 self.update(dt)
                 self.draw()
             except StateExit as e:
-                self.transition(e.args[0])
+                self.transition(e.args[0] if e.args else 0)
 
             self.renderer.present()
 
