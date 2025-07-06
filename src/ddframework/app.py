@@ -60,20 +60,29 @@ class StackEntry(NamedTuple):
 
 
 class App:
-    def __init__(self, title, screen, fps, bgcolor=None, window_flags=None):
+    def __init__(self, title, *, resolution=None, window=None, renderer=None, fps=60, bgcolor='black'):
+        self.title = title
         self.fps = fps
         self.bgcolor = bgcolor
 
-        self.window = pygame.Window(title=title,
-                                    mouse_grabbed=False,
-                                    keyboard_grabbed=False,
-                                    fullscreen_desktop=True)
-        self.window.grab_mouse = False
-        self.window.grab_keyboard = False
-        self.renderer = sdl2.Renderer(self.window)
-        self.renderer.logical_size = screen.size
+        if window is None:
+            window = self.window = pygame.Window(
+                title=title,
+                fullscreen_desktop=True,
+                fullscreen=True,
+                input_focus=True,
+                mouse_focus=True,
+            )
 
-        self.rect = screen.copy()
+        if renderer is None:
+            self.renderer = sdl2.Renderer(window)
+
+        # renderer.logical_size returns (0, 0) if unset
+        self.renderer.logical_size = resolution if resolution is not None else window.size
+
+        self.window_rect = pygame.Rect((0, 0), window.size)
+        self.logical_rect = pygame.Rect((0, 0), self.renderer.logical_size)
+
         self.clock = pygame.time.Clock()
         self.dt_max = 3 / fps
         self.running = True
@@ -92,9 +101,8 @@ class App:
             # dt = min(self.clock.tick(self.fps) / 1000.0, self.dt_max)
             dt = min(self.clock.tick(self.fps) / 1000.0, self.dt_max)
 
-            if self.bgcolor is not None:
-                self.renderer.draw_color = self.bgcolor
-
+            # This must happen here and not in the states due state stacking
+            self.renderer.draw_color = self.bgcolor
             self.renderer.clear()
 
             try:
