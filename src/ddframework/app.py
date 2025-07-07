@@ -157,7 +157,7 @@ class App:
             from_state = self.state_stack.pop(-1)
             if not self.state_stack:
                 return
-            self.state_stack[-1].state.restart(from_state, index)
+            self.state_stack[-1].state.restart(from_state.state, index)
         else:
             # preserve passthrough if we're on a stacked state that has a
             # transition
