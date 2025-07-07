@@ -37,7 +37,7 @@ class GameState(ABC):
     def reset(self):
         pass
 
-    def restart(self, result):
+    def restart(self, from_state, result):
         pass
 
     def dispatch_event(self, e):
@@ -154,10 +154,10 @@ class App:
 
     def transition(self, index):
         if index is None or index < 0:
-            self.state_stack.pop(-1)
+            from_state = self.state_stack.pop(-1)
             if not self.state_stack:
                 return
-            self.state_stack[-1].state.restart(index)
+            self.state_stack[-1].state.restart(from_state, index)
         else:
             # preserve passthrough if we're on a stacked state that has a
             # transition
