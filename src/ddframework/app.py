@@ -43,7 +43,8 @@ class GameState(ABC):
     def dispatch_event(self, e):
         if (e.type == pygame.QUIT
                 or e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE):
-            raise StateExit(-999)
+            raise SystemExit
+            # raise StateExit(-999)
 
     @abstractmethod
     def update(self, dt):
