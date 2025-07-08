@@ -66,13 +66,15 @@ class App:
         self.bgcolor = bgcolor
 
         if window is None:
-            window = self.window = pygame.Window(
+            window = pygame.Window(
                 title=title,
                 fullscreen_desktop=True,
                 fullscreen=True,
                 input_focus=True,
                 mouse_focus=True,
             )
+
+        self.window = window
 
         if renderer is None:
             self.renderer = sdl2.Renderer(window)
