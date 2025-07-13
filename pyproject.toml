@@ -1,7 +1,7 @@
 [project]
 name = "ddframework"
 description = "ddframework"
-version = "0.0.14"
+version = "0.0.15"
 readme = "README.md"
 
 authors = [
