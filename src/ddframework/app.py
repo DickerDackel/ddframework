@@ -5,7 +5,7 @@ from enum import IntEnum
 from typing import NamedTuple
 
 import pygame
-import pygame._render as render
+import pygame._sdl2 as sdl2
 
 from .statemachine import StateMachine
 
@@ -43,8 +43,7 @@ class GameState(ABC):
     def dispatch_event(self, e):
         if (e.type == pygame.QUIT
                 or e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE):
-            raise SystemExit
-            # raise StateExit(-999)
+            raise StateExit(-999)
 
     @abstractmethod
     def update(self, dt):
@@ -78,7 +77,7 @@ class App:
         self.window = window
 
         if renderer is None:
-            self.renderer = render.Renderer(window)
+            self.renderer = sdl2.Renderer(window)
 
         # renderer.logical_size returns (0, 0) if unset
         self.renderer.logical_size = resolution if resolution is not None else window.size
