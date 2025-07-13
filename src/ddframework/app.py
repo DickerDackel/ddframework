@@ -5,7 +5,6 @@ from enum import IntEnum
 from typing import NamedTuple
 
 import pygame
-import pygame._sdl2 as sdl2
 
 from .statemachine import StateMachine
 
@@ -78,7 +77,7 @@ class App:
         self.window = window
 
         if renderer is None:
-            self.renderer = sdl2.Renderer(window)
+            self.renderer = pygame._renderer.Renderer(window)
 
         # renderer.logical_size returns (0, 0) if unset
         self.renderer.logical_size = resolution if resolution is not None else window.size
