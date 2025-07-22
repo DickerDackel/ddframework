@@ -2,13 +2,34 @@ __all__ = ['add', 'get', 'get_all']
 
 _cache = {}
 
-def add(texture, name):
-    if name not in _cache:
-        _cache[name] = texture
+def add(obj, name):
+    """Adds or overwrites a cache entry."""
+    _cache[name] = obj
+
+
+def rm(name):
+    """Removes name from the cache."""
+    try:
+        del _cache[name]
+    except KeyError:
+        return False
+    else:
+        return True
+
 
 def get(name):
-    return _cache[name] if name in _cache else None
+    """Get name from the cache."""
+    try:
+        return _cache[name]
+    except KeyError:
+        return None
 
 
 def get_all(names):
-    return [get(name) for name in names]
+    """Get all names from cache in a list."""
+    return (get(name) for name in names)
+
+
+def has(*names):
+    """Check if all names are in the cache."""
+    return all(name in _cache for name in names)

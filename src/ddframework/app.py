@@ -2,10 +2,14 @@ import logging
 
 from abc import ABC, abstractmethod
 from enum import IntEnum
-from typing import NamedTuple
+from functools import partial
+from typing import Any, Hashable, Iterator, NamedTuple
 
 import pygame
 import pygame._sdl2 as sdl2
+
+from pygame.typing import Point
+from pygame.math import remap
 
 from .statemachine import StateMachine
 
@@ -15,6 +19,11 @@ __all__ = ['App', 'GameState', 'StackPermissions', 'StateExit']
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)-12s  %(message)s',
                     datefmt='%F %T')
+
+
+def _viewports_remap(r1: pygame.Rect, r2: pygame.Rect, pos: Point) -> tuple[float, float]:
+    return (remap(0, r1.width, 0, r2.width, pos[0]),
+            remap(0, r1.height, 0, r2.height, pos[1]))
 
 
 class StackPermissions(IntEnum):
@@ -31,26 +40,26 @@ class StateExit(Exception):
 
 
 class GameState(ABC):
-    def __init__(self, app):
+    def __init__(self, app: 'App'):
         self.app = app
 
-    def reset(self):
+    def reset(self) -> None:
         pass
 
-    def restart(self, from_state, result):
+    def restart(self, from_state: 'GameState', result: Any) -> None:
         pass
 
-    def dispatch_event(self, e):
+    def dispatch_event(self, e: pygame.event.Event) -> None:
         if (e.type == pygame.QUIT
                 or e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE):
             raise StateExit(-999)
 
     @abstractmethod
-    def update(self, dt):
+    def update(self, dt: float) -> None:
         pass
 
     @abstractmethod
-    def draw(self):
+    def draw(self) -> None:
         pass
 
 
@@ -60,7 +69,13 @@ class StackEntry(NamedTuple):
 
 
 class App:
-    def __init__(self, title, *, resolution=None, window=None, renderer=None, fps=60, bgcolor='black'):
+    def __init__(self, title: str,
+                 *,
+                 resolution: Point = None,
+                 window: pygame.Window = None,
+                 renderer: sdl2.Renderer = None,
+                 fps: int,
+                 bgcolor: pygame.Color) -> None:
         self.title = title
         self.fps = fps
         self.bgcolor = bgcolor
@@ -84,6 +99,8 @@ class App:
 
         self.window_rect = pygame.Rect((0, 0), window.size)
         self.logical_rect = pygame.Rect((0, 0), self.renderer.logical_size)
+        self.window_to_logical = partial(_viewports_remap, self.window_rect, self.logical_rect)
+        self.logical_to_window = partial(_viewports_remap, self.logical_rect, self.window_rect)
 
         self.clock = pygame.time.Clock()
         self.dt_max = 3 / fps
@@ -93,7 +110,7 @@ class App:
         self.state_machine = StateMachine()
         self.state_walker = None
 
-    def run(self):
+    def run(self) -> None:
         assert self.state_walker is not None
 
         self.state_stack.append(StackEntry(next(self.state_walker), 0))
@@ -116,7 +133,7 @@ class App:
 
             self.renderer.present()
 
-    def dispatch_events(self):
+    def dispatch_events(self) -> None:
         for e in pygame.event.get():
             states = (entry.state
                       for i, entry in enumerate(self.state_stack[:-1])
@@ -126,7 +143,7 @@ class App:
 
             self.state_stack[-1].state.dispatch_event(e)
 
-    def update(self, dt):
+    def update(self, dt: float = 0) -> None:
         states = (entry.state
                   for i, entry in enumerate(self.state_stack[:-1])
                   if self.state_stack[i + 1].passthrough & StackPermissions.UPDATE)
@@ -135,7 +152,7 @@ class App:
 
         self.state_stack[-1].state.update(dt)
 
-    def draw(self):
+    def draw(self) -> None:
         states = (entry.state
                   for i, entry in enumerate(self.state_stack[:-1])
                   if self.state_stack[i + 1].passthrough & StackPermissions.DRAW)
@@ -144,17 +161,19 @@ class App:
 
         self.state_stack[-1].state.draw()
 
-    def push(self, substate, passthrough=StackPermissions.NONE):
+    def push(self,
+             substate: GameState,
+             passthrough: StackPermissions = StackPermissions.NONE) -> None:
         self.state_stack.append(StackEntry(substate, passthrough))
         self.state_stack[-1].state.reset()
 
-    def is_stacked(self, state):
+    def is_stacked(self, state: GameState) -> None:
         return state in [_.state for _ in self.state_stack[:-1]]
 
-    def create_state_walker(self, node):
+    def create_state_walker(self, node: Hashable) -> Iterator[Hashable]:
         self.state_walker = self.state_machine.walker(node)
 
-    def transition(self, index):
+    def transition(self, index: int | None) -> None:
         if index is None or index < 0:
             from_state = self.state_stack.pop(-1)
             if not self.state_stack:

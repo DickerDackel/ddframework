@@ -1,3 +1,6 @@
+from typing import Hashable, Generator
+
+
 __all__ = ['StateMachine']
 
 class NoRoot(Exception): pass
@@ -6,17 +9,17 @@ class UnknownNode(Exception): pass
 class UnknownFollowupIndex(Exception): pass
 
 class StateMachine:
-    def __init__(self, states=None):
+    def __init__(self, states=None) -> None:
         self.states = {}
         self.root = None
 
-    def add(self, name, *followups):
+    def add(self, name, *followups) -> None:
         if self.root is None:
             self.root = name
 
         self.states[name] = followups
 
-    def walker(self, entry = None):
+    def walker(self, entry: Hashable = None) -> Generator[Hashable]:
         if entry is not None and entry not in self.states:
             raise UnknownNode(f'{entry} not in {self.states}') from KeyError
 
@@ -40,7 +43,7 @@ class StateMachine:
             node = next_node
 
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (f'StateMachine({id(self)}\n' +
                 '\n'.join([f'    {k}: {v}' for k, v in self.states.items()]) +
                 ')')

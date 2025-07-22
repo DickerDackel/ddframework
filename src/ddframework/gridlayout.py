@@ -15,7 +15,7 @@ class GridLayout:
     Parameters
     ----------
     canvas_rect: pygame.Rect
-        A rect witht the canvas dimensions
+        A rect like with the canvas dimensions
 
     cells_x: int
     cells_y: int
@@ -107,7 +107,7 @@ class GridLayout:
 
             grid = GridLayout(canvas, 10, 5)
             mouse = pygame.mouse.get_pos()
-            cell_x, cell_y = [int for _ in grid.cell(mouse.x, mouse.y)]
+            cell = grid.cell(mouse.x, mouse.y)
 
         Note:
 
