@@ -75,10 +75,12 @@ class App:
                  window: pygame.Window = None,
                  renderer: sdl2.Renderer = None,
                  fps: int,
-                 bgcolor: pygame.Color) -> None:
+                 bgcolor: pygame.Color,
+                 do_clear=True) -> None:
         self.title = title
         self.fps = fps
         self.bgcolor = bgcolor
+        self.do_clear = do_clear
 
         if window is None:
             window = pygame.Window(
@@ -121,8 +123,9 @@ class App:
             dt = min(self.clock.tick(self.fps) / 1000.0, self.dt_max)
 
             # This must happen here and not in the states due state stacking
-            self.renderer.draw_color = self.bgcolor
-            self.renderer.clear()
+            if self.do_clear:
+                self.renderer.draw_color = self.bgcolor
+                self.renderer.clear()
 
             try:
                 self.dispatch_events()
