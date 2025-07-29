@@ -158,7 +158,7 @@ def debug_grid(screen, grid, color='grey20'):
         preserve_color = screen.draw_color
         screen.draw_color = color
 
-        screen.draw_rect(screen.get_viewport())
+        screen.draw_rect(screen.get_viewport().move_to(topleft=(0, 0)))
         screen.draw_rect(grid(0, 0, grid.cells_x, grid.cells_y))
         for y in range(grid.cells_y):
             for x in range(grid.cells_x):
