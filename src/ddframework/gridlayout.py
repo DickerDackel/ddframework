@@ -36,9 +36,6 @@ class GridLayout:
         self.steps_x = (self.canvas.width - 2 * self.margin_x) / self.cells_x 
         self.steps_y = (self.canvas.height - 2 * self.margin_y) / self.cells_y
 
-    def _validate(self, x, y, w, h):
-        return (w > 0 and h > 0 and x + w <= self.cells_x and y + h <= self.cells_y)
-
     def __call__(self, x, y, w=1, h=1):
         """Return a rectangle starting at the x, y cell coordinates, spanning over w, h cells
 
@@ -62,8 +59,6 @@ class GridLayout:
             None is returned.
 
         """
-        if not self._validate(x, y, w, h): return None
-
         res_x = self.canvas.left + self.margin_x + x * self.steps_x
         res_y = self.canvas.left + self.margin_y + y * self.steps_y
 
@@ -93,8 +88,6 @@ class GridLayout:
             None is returned.
 
         """
-        if not self._validate(x, y, w, h): return None
-
         frac_x = (x - int(x)) * self.steps_x
         frac_y = (y - int(x)) * self.steps_y
 
