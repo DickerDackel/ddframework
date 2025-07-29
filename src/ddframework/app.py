@@ -160,9 +160,9 @@ class App:
                   for i, entry in enumerate(self.state_stack[:-1])
                   if self.state_stack[i + 1].passthrough & StackPermissions.DRAW)
         for state in states:
-            state.draw(self.renderer)
+            state.draw()
 
-        self.state_stack[-1].state.draw(self.renderer)
+        self.state_stack[-1].state.draw()
 
     def push(self,
              substate: GameState,
