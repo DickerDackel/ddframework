@@ -32,7 +32,7 @@ __all__ = ['TITLE', 'SCREEN', 'FPS', 'BGCOLOR',
 ########################################################################
 
 
-TITLE = 'Title'
+TITLE = 'Sample App'
 SCREEN = pygame.Rect(0, 0, 1024, 768)
 FPS = 60
 
