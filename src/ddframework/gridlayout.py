@@ -31,6 +31,8 @@ class GridLayout:
     cells_y: int
     margin_x: int = 0
     margin_y: int = 0
+    cell_margin_x: int = 0,
+    cell_margin_y: int = 0
 
     def __post_init__(self):
         self.steps_x = (self.canvas.width - 2 * self.margin_x) / self.cells_x 
@@ -81,8 +83,9 @@ class GridLayout:
         """
         res_x = self.canvas.left + self.margin_x + x * self.steps_x
         res_y = self.canvas.left + self.margin_y + y * self.steps_y
+        rect = pygame.Rect(res_x, res_y, w * self.steps_x, h * self.steps_y).inflate(-self.cell_margin_x, -self.cell_margin_y)
 
-        return pygame.Rect(res_x, res_y, w * self.steps_x, h * self.steps_y)
+        return rect
 
     def offset(self, x, y, w=1, h=1):
         """Return the fragment offset within a requested cell
