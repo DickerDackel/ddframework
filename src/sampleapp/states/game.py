@@ -96,7 +96,7 @@ class Game(GameState):
         self.prelaunch_frames = 2
         self.emitter.empty()
 
-    def restart(self, result):
+    def restart(self, from_state, result):
         if self.prelaunch_frames >= 0:
             self.prelaunch_frames = 2
 
