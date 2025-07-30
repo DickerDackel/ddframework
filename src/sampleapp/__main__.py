@@ -12,7 +12,11 @@ from .states import Splash, Title, Demo, Highscores, Game
 
 
 def main():
-    app = App(G.TITLE, G.SCREEN, G.FPS)
+    w = pygame.Window(size=(1024, 960))
+    app = App(G.TITLE, window=w, resolution=G.SCREEN.size, fps=G.FPS,
+              bgcolor=G.COLOR.background)
+
+    pygame.mouse.set_visible(False)
     pygame.mouse.set_relative_mode(True)
 
     states = SimpleNamespace(
