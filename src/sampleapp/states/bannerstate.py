@@ -29,7 +29,7 @@ class BannerState(GameState):
         self.textbox = TextBox(self.banner, styles, blink=blink)
         self.groups.text.add(cs.TextSprite(self.app.renderer, self.textbox, rsap))
 
-    def reset(self):
+    def reset(self, *args, **kwargs):
         if self.lifetime is not None:
             self.lifetime.reset()
 

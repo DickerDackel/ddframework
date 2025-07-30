@@ -1,9 +1,10 @@
 import logging
 
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from enum import IntEnum
 from functools import partial
-from typing import Any, Hashable, Iterator, NamedTuple
+from typing import Any, Hashable, Iterator
 
 import pygame
 import pygame._sdl2 as sdl2
@@ -11,7 +12,7 @@ import pygame._sdl2 as sdl2
 from pygame.typing import Point
 from pygame.math import remap
 
-from .statemachine import StateMachine
+from ddframework.statemachine import StateMachine
 
 __all__ = ['App', 'GameState', 'StackPermissions', 'StateExit']
 
@@ -43,7 +44,7 @@ class GameState(ABC):
     def __init__(self, app: 'App'):
         self.app = app
 
-    def reset(self) -> None:
+    def reset(self, *args, **kwargs) -> None:
         pass
 
     def restart(self, from_state: 'GameState', result: Any) -> None:
@@ -52,7 +53,7 @@ class GameState(ABC):
     def dispatch_event(self, e: pygame.event.Event) -> None:
         if (e.type == pygame.QUIT
                 or e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE):
-            raise StateExit(-999)
+            raise StateExit(None)
 
     @abstractmethod
     def update(self, dt: float) -> None:
@@ -63,9 +64,11 @@ class GameState(ABC):
         pass
 
 
-class StackEntry(NamedTuple):
-    state: GameState
+@dataclass
+class StackEntry:
+    state: GameState | None
     passthrough: int
+    walker: Iterator
 
 
 class App:
@@ -109,17 +112,11 @@ class App:
         self.running = True
 
         self.state_stack = []
-        self.state_machine = StateMachine()
-        self.state_walker = None
 
-    def run(self) -> None:
-        assert self.state_walker is not None
-
-        self.state_stack.append(StackEntry(next(self.state_walker), 0))
-        self.state_stack[-1].state.reset()
+    def run(self, walker) -> None:
+        self.push(walker, StackPermissions.NONE)
 
         while self.state_stack:
-            # dt = min(self.clock.tick(self.fps) / 1000.0, self.dt_max)
             dt = min(self.clock.tick(self.fps) / 1000.0, self.dt_max)
 
             # This must happen here and not in the states due state stacking
@@ -132,7 +129,7 @@ class App:
                 self.update(dt)
                 self.draw()
             except StateExit as e:
-                self.transition(e.args[0] if e.args else 0)
+                self.transition(e.args if len(e.args) else None)
 
             self.renderer.present()
 
@@ -165,10 +162,19 @@ class App:
         self.state_stack[-1].state.draw()
 
     def push(self,
-             substate: GameState,
+             state_or_walker: GameState | Iterator,
              passthrough: StackPermissions = StackPermissions.NONE) -> None:
-        self.state_stack.append(StackEntry(substate, passthrough))
-        self.state_stack[-1].state.reset()
+
+        if isinstance(state_or_walker, GameState):
+            statemachine = StateMachine()
+            statemachine.add(state_or_walker, None)
+            walker = statemachine.walker()
+        else:
+            walker = state_or_walker
+
+        stackentry = StackEntry(next(walker), passthrough, walker)
+        self.state_stack.append(stackentry)
+        self.state_stack[-1].state.reset(None)
 
     def is_stacked(self, state: GameState) -> None:
         return state in [_.state for _ in self.state_stack[:-1]]
@@ -176,17 +182,35 @@ class App:
     def create_state_walker(self, node: Hashable) -> Iterator[Hashable]:
         self.state_walker = self.state_machine.walker(node)
 
-    def transition(self, index: int | None) -> None:
-        if index is None or index < 0:
-            from_state = self.state_stack.pop(-1)
+    def transition(self, result: tuple[Any] | int | None) -> None:
+        # If the GameState raises StateExit(None|-1):
+        #   Pop
+        #   If stack is empty, return
+        # If the GameState raises StateExit(nn):
+        #   Transition to nn
+        #   If walker is empty:
+        #       Pop
+        #       if stack is empty, return
+        # If the GameState raises StateExit(tuple): Transition to tuple[0]
+        #    if tuple[0] is None or <0: Terminate
+        #    else transition to tuple[0]
+        # If Transition destination is None: Terminate
+        # If stack is empty: return
+
+        if isinstance(result, tuple):
+            index = result[0]
+        else:
+            index = result
+
+        try:
+            followup = self.state_stack[-1].walker.send(index)
+        except StopIteration:
+            from_state = self.state_stack.pop(-1).state
             if not self.state_stack:
                 return
-            self.state_stack[-1].state.restart(from_state.state, index)
-        else:
-            # preserve passthrough if we're on a stacked state that has a
-            # transition
-            passthrough = self.state_stack[-1].passthrough
-            followup = StackEntry(self.state_walker.send(index), passthrough)
 
-            self.state_stack[-1] = followup
-            self.state_stack[-1].state.reset()
+            self.state_stack[-1].state.restart(from_state, result)
+            return
+
+        self.state_stack[-1].state = followup
+        self.state_stack[-1].state.reset(result)

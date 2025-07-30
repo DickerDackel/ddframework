@@ -90,11 +90,12 @@ class Game(GameState):
                                     factory=factory)
 
 
-    def reset(self):
-        super().reset()
+    def reset(self, *args, **kwargs):
+        super().reset(*args, **kwargs)
         self.state = self._States.PRE_LAUNCH
         self.prelaunch_frames = 2
         self.emitter.empty()
+        self.running_cooldown = Cooldown(10)
 
     def restart(self, from_state, result):
         if self.prelaunch_frames >= 0:
@@ -103,7 +104,7 @@ class Game(GameState):
     def dispatch_event(self, e):
         if e.type == pygame.KEYDOWN:
             if e.key == pygame.K_ESCAPE:
-                self.state = self._States.GAMEOVER
+                raise StateExit(0)
             elif e.key == pygame.K_p:
                 self.app.push(Pause(self.app), StackPermissions.DRAW)
 
@@ -123,17 +124,21 @@ class Game(GameState):
 
         if self.state == self._States.COUNTDOWN and not self.app.is_stacked(self):
             self.state = self._States.RUNNING
+            self.running_cooldown.reset(10)
             # Fallthrough
 
         if self.state == self._States.RUNNING:
-            ...
+            if self.running_cooldown.cold():
+                self.state = self._States.GAMEOVER
 
         if self.state == self._States.GAMEOVER:
+            print('GAMEOVER')
             self.app.push(Gameover(self.app), StackPermissions.UPDATE | StackPermissions.DRAW)
             self.state = self._States.LINGERING
             return
 
         if self.state == self._States.LINGERING and not self.app.is_stacked(self):
+            print('LINGERING AND NOT STACKED')
             raise StateExit(0)
 
     def draw(self):

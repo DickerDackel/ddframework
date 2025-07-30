@@ -21,8 +21,8 @@ class Countdown(BannerState):
         self.digits = None
         self.cooldown = Cooldown(1)
 
-    def reset(self):
-        super().reset()
+    def reset(self, *args, **kwargs):
+        super().reset(*args, **kwargs)
         self.cooldown.reset()
         self.digits = iter(['3', '2', '1'])
         self.textbox.text = next(self.digits)

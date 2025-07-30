@@ -4,7 +4,8 @@ from types import SimpleNamespace
 
 import pygame
 
-from ddframework import App
+from ddframework.app import App
+from ddframework.statemachine import StateMachine
 
 import sampleapp.globals as G
 
@@ -26,14 +27,15 @@ def main():
         highscores=Highscores(app),
         game=Game(app),
     )
-    app.state_machine.add(states.splash, states.title)
-    app.state_machine.add(states.title, states.demo, states.game)
-    app.state_machine.add(states.demo, states.highscores, states.game)
-    app.state_machine.add(states.highscores, states.title, states.game)
-    app.state_machine.add(states.game, states.highscores)
-    app.create_state_walker(states.splash)
+    statemachine = StateMachine()
+    statemachine.add(states.splash, states.title)
+    statemachine.add(states.title, states.demo, states.game)
+    statemachine.add(states.demo, states.highscores, states.game)
+    statemachine.add(states.highscores, states.title, states.game)
+    statemachine.add(states.game, states.highscores)
+    walker = statemachine.walker(states.splash)
 
-    app.run()
+    app.run(walker)
 
 if __name__ == "__main__":
     main()
