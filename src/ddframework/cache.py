@@ -1,6 +1,31 @@
-__all__ = ['add', 'get', 'get_all']
+from collections import UserDict
+
+
+__all__ = ['cache', 'Cache', 'add', 'get', 'get_all']
 
 _cache = {}
+
+class Cache(UserDict):
+    def __setitem__(self, key, item):
+        if key in self.data:
+            raise RuntimeError('Overwriting an existing item is not allowed.  Use `replace()`')
+
+        super().__setitem__(key, item)
+
+    def replace(self, key, item):
+        self.data[key] = item
+
+    def get_all(self, *names):
+        if len(names) == 1:
+            return self.data[names[0]]
+        else:
+            return (self.data[key] for key in names)
+
+    def has(self, *names):
+        return all(key in self.data for key in names)
+
+cache = Cache()
+
 
 def add(obj, name):
     """Adds or overwrites a cache entry."""
