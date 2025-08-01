@@ -31,7 +31,7 @@ class GridLayout:
     cells_y: int
     margin_x: int = 0
     margin_y: int = 0
-    cell_margin_x: int = 0,
+    cell_margin_x: int = 0
     cell_margin_y: int = 0
 
     def __post_init__(self):
