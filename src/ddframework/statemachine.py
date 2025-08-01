@@ -3,7 +3,7 @@ from typing import Hashable, Iterator
 
 __all__ = ['StateMachine']
 
-class NoRoot(Exception): pass
+class EmptyGraph(Exception): pass
 class OpenGraph(Exception): pass
 class UnknownNode(Exception): pass
 class UnknownFollowupIndex(Exception): pass
@@ -23,16 +23,19 @@ class StateMachine:
         if entry is not None and entry not in self.states:
             raise UnknownNode(f'{entry} not in {self.states}') from KeyError
 
+        if self.root is None:
+            raise EmptyGraph(f'Cannot create a walker for an empty graph')
+
         node = entry if entry is not None else self.root
         followup_idx = 0
         while True:
             # If the current node is None, terminate
-            if node is None:
-                break
 
             followup_idx = yield node
-            # If we received a None, terminate
+            # yield from a next returns None
             if followup_idx is None:
+                followup_idx = 0
+            elif followup_idx < 0:
                 break
 
             try:
@@ -42,6 +45,8 @@ class StateMachine:
 
             if next_node is not None and next_node not in self.states:
                 raise OpenGraph((node, next_node))
+            elif next_node is None:
+                break
 
             node = next_node
 
