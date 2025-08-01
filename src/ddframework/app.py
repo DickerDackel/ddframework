@@ -9,7 +9,7 @@ from typing import Any, Hashable, Iterator
 import pygame
 import pygame._sdl2 as sdl2
 
-from pygame.typing import Point
+from pygame.typing import ColorLike, Point
 from pygame.math import remap
 
 from ddframework.statemachine import StateMachine
@@ -42,7 +42,7 @@ class StateExit(Exception):
 
 class GameState(ABC):
     def __init__(self, app: 'App'):
-        self.app = app
+        self.app: 'App' = app
 
     def reset(self, *args, **kwargs) -> None:
         pass
@@ -74,12 +74,12 @@ class StackEntry:
 class App:
     def __init__(self, title: str,
                  *,
-                 resolution: Point = None,
-                 window: pygame.Window = None,
-                 renderer: sdl2.Renderer = None,
+                 resolution: Point | None = None,
+                 window: pygame.Window | None = None,
+                 renderer: sdl2.Renderer | None = None,
                  fps: int,
-                 bgcolor: pygame.Color,
-                 do_clear=True) -> None:
+                 bgcolor: ColorLike,
+                 do_clear: bool = True) -> None:
         self.title = title
         self.fps = fps
         self.bgcolor = bgcolor
