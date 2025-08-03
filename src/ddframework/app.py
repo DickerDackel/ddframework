@@ -185,9 +185,6 @@ class App:
     def is_stacked(self, state: GameState) -> None:
         return state in [_.state for _ in self.state_stack[:-1]]
 
-    def create_state_walker(self, node: Hashable) -> Iterator[Hashable]:
-        self.state_walker = self.state_machine.walker(node)
-
     def transition(self, result: tuple[Any] | int | None) -> None:
         # If the GameState raises StateExit(None|-1):
         #   Pop
