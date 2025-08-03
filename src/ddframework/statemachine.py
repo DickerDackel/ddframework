@@ -1,4 +1,4 @@
-from typing import Hashable, Generator
+from typing import Hashable, Generator, Iterator
 
 
 __all__ = ['StateMachine']
@@ -21,7 +21,7 @@ class StateMachine:
 
         self.states[name] = followups
 
-    def walker(self, entry: Hashable = None) -> Generator[Hashable]:
+    def walker(self, entry: Hashable = None) -> Generator[Hashable, Hashable, None]
         if entry is not None and entry not in self.states:
             raise UnknownNode(f'{entry} not in {self.states}') from KeyError
 
