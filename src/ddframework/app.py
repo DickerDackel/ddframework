@@ -186,16 +186,18 @@ class App:
         return state in [_.state for _ in self.state_stack[:-1]]
 
     def transition(self, result: tuple[Any] | int | None) -> None:
-        # If the GameState raises StateExit(None|-1):
+        # If the GameState raises StateExit(nn < 0):
         #   Pop
         #   If stack is empty, return
+        # If the Gamestate raises StateExit(None), it's the same as using
+        #   `next(walker).  --> Set nn to 0
         # If the GameState raises StateExit(nn):
         #   Transition to nn
-        #   If walker is empty:
-        #       Pop
-        #       if stack is empty, return
+        #   On StopIteration (walker is exhausted):
+        #     Pop
+        #     if stack is empty, return
         # If the GameState raises StateExit(tuple): Transition to tuple[0]
-        #    if tuple[0] is None or <0: Terminate
+        #    if tuple[0] is < 0: Terminate
         #    else transition to tuple[0]
         # If Transition destination is None: Terminate
         # If stack is empty: return
