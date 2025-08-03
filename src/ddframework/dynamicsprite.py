@@ -12,34 +12,8 @@ from ddframework.autosequencer import AutoSequence, AutoSequencer
 import pygame
 
 
-class _TotallyAVec2(vec2):
-    """Makes sure the object is guaranteed to be a vec2, even after
-    overwriting."""
-
-    def __set_name__(self, obj: object, name: str) -> None:
-        self.attrib = f'__totally_a_vec2_{name}'
-
-    # type hint for val stolen from pygame-ce's math.pyi
-    # def __set__(self, obj: vec2, val: str | float | Sequence[float] | vec2) -> None:
-    def __set__(self, obj: vec2, val: vec2) -> None:
-        if val is None:
-            val = (0, 0)
-
-        if isinstance(val, vec2):
-            obj.__setattr__(self.attrib, val)
-        else:
-            obj.__setattr__(self.attrib, vec2(val))
-
-    def __get__(self, obj: vec2 | None, objtype: Type[vec2]) -> vec2:
-        if obj is None: return self
-
-        return obj.__getattribute__(self.attrib)
-
-
 class PRSA:
     """Rotation, Scale, Alpha, Position in one container"""
-
-    pos: vec2 = _TotallyAVec2()
 
     def __init__(self, pos: vec2 | None = None,
                  rotation: float = 0, scale: float = 1, alpha: float = 255) -> None:
