@@ -30,13 +30,13 @@ class AutoSequencer[T]:
 
     """
 
-    def __init__(self, repeat=1):
+    def __init__(self, repeat: int = 1) -> None:
         self.repeat = repeat
 
-    def __set_name__(self, obj: object, name: str):
+    def __set_name__(self, obj: object, name: str) -> None:
         self.attrib = f'__AutoSequencer_{name}'
 
-    def __set__(self, obj: T, val: T | AutoSequence):
+    def __set__(self, obj: T, val: T | AutoSequence) -> None:
         if isinstance(val, Sequence):
             items, delay = val
         else:
@@ -46,7 +46,7 @@ class AutoSequencer[T]:
         lt = LerpThing(0, len(items), delay, repeat=self.repeat)
         obj.__setattr__(self.attrib, (items, lt))
 
-    def __get__(self, obj: Optional[T], objtype: Type[T]) -> AutoSequence | T | None:
+    def __get__(self, obj: T | None, objtype: Type[T]) -> AutoSequence | T | None:
         if obj is None: return self
 
         sequence, lt = obj.__getattribute__(self.attrib)
