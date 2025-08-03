@@ -3,10 +3,12 @@ from typing import Hashable, Generator
 
 __all__ = ['StateMachine']
 
+
 class EmptyGraph(Exception): pass
 class OpenGraph(Exception): pass
 class UnknownNode(Exception): pass
 class UnknownFollowupIndex(Exception): pass
+
 
 class StateMachine:
     def __init__(self, states=None) -> None:
@@ -24,7 +26,7 @@ class StateMachine:
             raise UnknownNode(f'{entry} not in {self.states}') from KeyError
 
         if self.root is None:
-            raise EmptyGraph(f'Cannot create a walker for an empty graph')
+            raise EmptyGraph('Cannot create a walker for an empty graph')
 
         node = entry if entry is not None else self.root
         followup_idx = 0
@@ -50,8 +52,7 @@ class StateMachine:
 
             node = next_node
 
-
     def __repr__(self) -> str:
-        return (f'StateMachine({id(self)}\n' +
-                '\n'.join([f'    {k}: {v}' for k, v in self.states.items()]) +
-                ')')
+        return ('\n'.join((f'StateMachine({id(self)}\n',
+                           '\n'.join([f'    {k}: {v}' for k, v in self.states.items()]),
+                           ')')))
