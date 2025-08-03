@@ -15,7 +15,7 @@ class StateMachine:
         self.states = {}
         self.root = None
 
-    def add(self, state: Hashable, *followups: tuple[Hashable]) -> None:
+    def add(self, state: Hashable, *followups: Hashable) -> None:
         if self.root is None:
             self.root = state
 
