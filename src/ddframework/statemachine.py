@@ -11,17 +11,17 @@ class UnknownFollowupIndex(Exception): pass  # noqa: E302
 
 
 class StateMachine:
-    def __init__(self, states=None) -> None:
+    def __init__(self, states: Hashable | None = None) -> None:
         self.states = {}
         self.root = None
 
-    def add(self, name, *followups) -> None:
+    def add(self, state: Hashable, *followups: tuple[Hashable]) -> None:
         if self.root is None:
-            self.root = name
+            self.root = state
 
-        self.states[name] = followups
+        self.states[state] = followups
 
-    def walker(self, entry: Hashable = None) -> Generator[Hashable, Hashable, None]
+    def walker(self, entry: Hashable = None) -> Generator[Hashable, Hashable, None]:
         if entry is not None and entry not in self.states:
             raise UnknownNode(f'{entry} not in {self.states}') from KeyError
 
