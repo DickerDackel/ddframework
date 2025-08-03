@@ -13,6 +13,7 @@ import pygame._sdl2 as sdl2
 from pygame.typing import ColorLike, Point
 from pygame.math import remap
 
+from ddframework.msgbroker import broker
 from ddframework.statemachine import StateMachine
 
 __all__ = ['App', 'GameState', 'StackPermissions', 'StateExit']
@@ -112,6 +113,8 @@ class App:
         self.dt_max = 3 / fps
         self.running = True
 
+        self.broker = broker
+
         self.state_stack = []
 
     def run(self, walker) -> None:
@@ -143,6 +146,8 @@ class App:
                 state.dispatch_event(e)
 
             self.state_stack[-1].state.dispatch_event(e)
+
+        broker.tick()
 
     def update(self, dt: float = 0) -> None:
         states = (entry.state
