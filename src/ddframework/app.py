@@ -1,10 +1,11 @@
 import logging
 
 from abc import ABC, abstractmethod
+from collections.abc import Iterator
 from dataclasses import dataclass
 from enum import IntEnum
 from functools import partial
-from typing import Any, Hashable, Iterator
+from typing import Any
 
 import pygame
 import pygame._sdl2 as sdl2
