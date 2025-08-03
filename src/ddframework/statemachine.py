@@ -5,9 +5,9 @@ __all__ = ['StateMachine']
 
 
 class EmptyGraph(Exception): pass
-class OpenGraph(Exception): pass
-class UnknownNode(Exception): pass
-class UnknownFollowupIndex(Exception): pass
+class OpenGraph(Exception): pass  # noqa: E302
+class UnknownNode(Exception): pass  # noqa: E302
+class UnknownFollowupIndex(Exception): pass  # noqa: E302
 
 
 class StateMachine:
