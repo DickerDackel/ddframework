@@ -1,6 +1,8 @@
 import pygame
 import pygame._sdl2 as sdl2
 
+from pygame.typing import ColorLike
+
 from dataclasses import dataclass
 
 
@@ -150,7 +152,7 @@ class GridLayout:
         return x, y
 
 
-def debug_grid(screen, grid, color='grey20'):
+def debug_grid(screen: pygame.Surface | sdl2.Renderer, grid: GridLayout, color: ColorLike = 'grey20'):
     if isinstance(screen, pygame.Surface):
         pygame.draw.rect(screen, color, screen.get_rect(), width=1)
         pygame.draw.rect(screen, color, grid(0, 0, grid.cells_x, grid.cells_y), width=1)
