@@ -1,13 +1,26 @@
+from dataclasses import dataclass
+
+import pygame._sdl2 as sdl2
+
+from pygame import Vector2 as vec2
+from pygame.typing import Point
+
+from ddframework.autosequencer import AutoSequence, AutoSequencer
+
 import pygame
 
-from glm import vec2
 
+class _TotallyAVec2(vec2):
+    """Makes sure the object is guaranteed to be a vec2, even after
+    overwriting."""
 
-class _TotallyAVec2:
     def __set_name__(self, obj, name):
         self.attrib = f'__totally_a_vec2_{name}'
 
     def __set__(self, obj, val):
+        if val is None:
+            val = (0, 0)
+
         if isinstance(val, vec2):
             obj.__setattr__(self.attrib, val)
         else:
@@ -19,69 +32,55 @@ class _TotallyAVec2:
         return obj.__getattribute__(self.attrib)
 
 
-class RSAP:
-    pos = _TotallyAVec2()
-
+@dataclass
+class PRSA:
     """Rotation, Scale, Alpha, Position in one container"""
-    def __init__(self,
-                 angle: float = 0,
-                 scale: float = 1,
-                 alpha: int = 255,
-                 pos: vec2|tuple[float, float] = (0, 0)) -> None:
-        self.angle = angle
-        self.scale = scale
-        self.alpha = alpha
-        self.pos = pos
+
+    pos: Point = _TotallyAVec2()
+    rotation: float = 0
+    scale: float | tuple[float, float] = 1
+    alpha: float = 255
 
     def __iter__(self):
-        yield self.angle
+        yield self.pos
+        yield self.rotation
         yield self.scale
         yield self.alpha
-        yield self.pos
 
 
-class DynamicSprite(pygame.sprite.Sprite):
-    def __init__(self, texture, rsap, *groups, anchor='center'):
-        # pygame.sprite.Sprite initialized rect and image empty
+class SDL2Group(pygame.sprite.Group):
+    def draw(self, *args, **kwargs) -> None:
+        for sprite in self.sprites():
+            sprite.draw()
+
+
+class SDL2BaseSprite(pygame.sprite.Sprite):
+    def __init__(self, prsa, *groups, anchor='center'):
         super().__init__(*groups)
-
-        self.image = texture
-        self.rsap = rsap  # Camera needs access to this.  Can't be in a comp alone!
+        self.prsa = prsa
         self.anchor = anchor
 
-        self.rect = self.image.get_rect(**{self.anchor: rsap.pos})
+    def __repr__(self):
+        return f'{self.__class__}({self.prsa}, {self.image}, {self.rect})'
 
     def update(self, dt):
-        setattr(self.rect, self.anchor, self.rsap.pos)
+        if hasattr(self, 'rect'):
+            setattr(self.rect, self.anchor, self.prsa.pos)
 
-    # This is for tinyecs
-    def shutdown_(self):
-        self.kill()
-
-
-class TGroup(pygame.sprite.Group):
     def draw(self):
-        for s in self.sprites():
-            args = {}
-
-            if hasattr(s, 'scale'):
-                args['dstrect'] = s.rect.scale_by(s.scale)
-            else:
-                args['dstrect'] = s.rect
-
-            if hasattr(s, 'angle'):
-                args['angle'] = s.angle
-
-            preserve_alpha = None
-            if hasattr(s, 'alpha'):
-                preserve_alpha = s.image.alpha
-                s.alpha = s.alpha
-
-            s.image.draw(**args)
-
-            if preserve_alpha is not None:
-                s.image.alpha = preserve_alpha
+        bkp_alpha = self.image.alpha
+        self.image.alpha = self.prsa.alpha
+        self.image.draw(dstrect=self.rect.scale_by(self.prsa.scale),
+                        angle=self.prsa.rotation)
+        self.image.alpha = bkp_alpha
 
 
-def dynamic_sprite_system(self, dt, sprite):
-    sprite.update(dt)
+class SDL2Sprite(SDL2BaseSprite):
+    def __init__(self, prsa, texture, *groups, **kwargs):
+        super().__init__(prsa, *groups, **kwargs)
+        self.image = texture
+        self.rect = texture.get_rect(center=self.prsa.pos)
+
+
+class SDL2AnimSprite(SDL2BaseSprite):
+    image: sdl2.Texture | AutoSequence[sdl2.Texture] = AutoSequencer()
