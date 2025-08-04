@@ -7,9 +7,9 @@ from pgcooldown import LerpThing
 T = TypeVar("T")
 
 
-class AutoSequence(NamedTuple):
+class SequenceConfig(NamedTuple):
     items: Sequence[object]
-    delay: float
+    duration: float
 
 
 class AutoSequencer[T]:
@@ -21,9 +21,9 @@ class AutoSequencer[T]:
             image: pygame.surface.Surface = AutoSequence(repeat=True)
             def __init__(self,
                          image_list: list[pygame.surface.Surface,
-                         delay: float = 1) -> None:
+                         duration: float = 1) -> None:
                 super().__init__()
-                self.image = (image_list, delay)
+                self.image = (image_list, duration)
 
         sprite = Sprite(list_of_images, 3):
         current_image = sprite.image  # <-- will change over time
@@ -36,17 +36,17 @@ class AutoSequencer[T]:
     def __set_name__(self, obj: object, name: str) -> None:
         self.attrib = f'__AutoSequencer_{name}'
 
-    def __set__(self, obj: T, val: T | AutoSequence) -> None:
+    def __set__(self, obj: T, val: T | SequenceConfig) -> None:
         if isinstance(val, Sequence):
-            items, delay = val
+            items, duration = val
         else:
             items = (val,)
-            delay = 1
+            duration = 1
 
-        lt = LerpThing(0, len(items), delay, repeat=self.repeat)
+        lt = LerpThing(0, len(items), duration, repeat=self.repeat)
         obj.__setattr__(self.attrib, (items, lt))
 
-    def __get__(self, obj: T | None, objtype: Type[T]) -> AutoSequence | T | None:
+    def __get__(self, obj: T | None, objtype: Type[T]) -> SequenceConfig | T | None:
         if obj is None: return self
 
         sequence, lt = obj.__getattribute__(self.attrib)
@@ -55,3 +55,10 @@ class AutoSequencer[T]:
             return None
         else:
             return sequence[int(lt())]
+
+
+class AutoSequence:
+    item: object = AutoSequencer()
+
+    def __init__(self, config: SequenceConfig | tuple[Sequence[object], float], repeat: int = 1) -> None:
+        self.item = config
