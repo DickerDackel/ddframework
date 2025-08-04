@@ -147,7 +147,7 @@ class App:
 
             self.state_stack[-1].state.dispatch_event(e)
 
-        broker.tick()
+        self.broker.tick()
 
     def update(self, dt: float = 0) -> None:
         states = (entry.state
