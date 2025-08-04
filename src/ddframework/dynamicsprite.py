@@ -68,3 +68,10 @@ class SDL2Sprite(SDL2BaseSprite):
 
 class SDL2AnimSprite(SDL2BaseSprite):
     image: sdl2.Texture | AutoSequence[sdl2.Texture] = AutoSequencer()
+
+    def __init__(self, prsa: PRSA, textures: Sequence[sdl2.Texture],
+                 *groups: tuple[pygame.sprite.Group],
+                 duration=1) -> None:
+        super().__init__(prsa, textures[0])
+        self.prsa = prsa
+        self.image = AutoSequence(textures, duration)
