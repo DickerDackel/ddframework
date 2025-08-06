@@ -16,7 +16,7 @@ class Message(NamedTuple):
     args: tuple[Any]
     kwargs: dict[str, Any]
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'{self.message}: {self.args}, {self.kwargs}'
 
 
@@ -26,13 +26,13 @@ class MessageBroker:
         self._receivers = defaultdict(set)
 
     def register(self,
-                 callback: Callable[..., None],
+                 callback: Callable[..., Any],
                  *message_types: MessageType,
-                 wants_command=False) -> None:
+                 wants_command: bool = False) -> None:
         for t in message_types:
             self._receivers[t].add((callback, wants_command))
 
-    def reset(self):
+    def reset(self) -> None:
         self._receivers.clear()
 
     def tick(self) -> None:
