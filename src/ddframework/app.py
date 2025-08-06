@@ -19,7 +19,7 @@ from ddframework.statemachine import StateMachine
 __all__ = ['App', 'GameState', 'StackPermissions', 'StateExit']
 
 
-logging.basicConfig(level=logging.DEBUG,
+logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s %(levelname)-12s  %(message)s',
                     datefmt='%F %T')
 
