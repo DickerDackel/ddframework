@@ -7,7 +7,6 @@ __all__ = ['StateMachine']
 class EmptyGraph(Exception): pass
 class OpenGraph(Exception): pass  # noqa: E302
 class UnknownNode(Exception): pass  # noqa: E302
-class UnknownFollowupIndex(Exception): pass  # noqa: E302
 
 
 class StateMachine:
@@ -43,7 +42,7 @@ class StateMachine:
             try:
                 next_node = self.states[node][followup_idx]
             except IndexError:
-                raise UnknownFollowupIndex(node, followup_idx, self.states[node]) from IndexError
+                raise OpenGraph(node, followup_idx, self.states[node]) from IndexError
 
             if next_node is not None and next_node not in self.states:
                 raise OpenGraph((node, next_node))
