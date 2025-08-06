@@ -7,16 +7,18 @@ import pygame._sdl2 as sdl2
 from pygame import Vector2 as vec2
 from pygame.typing import Point
 
-from ddframework.autosequencer import AutoSequence, AutoSequencer
-
 import pygame
 
 
 class PRSA:
     """Rotation, Scale, Alpha, Position in one container"""
+    pos: vec2
+    rotation: float
+    scale: float
+    alpha: float
 
     def __init__(self, pos: vec2 | None = None,
-                 rotation: float = 0, scale: float = 1, alpha: float = 255) -> None:
+                 rotation: float = 0, scale: Sequence[float] | float = 1, alpha: float = 255) -> None:
         self.pos = pos
         self.rotation = rotation
         self.scale = scale
@@ -64,14 +66,3 @@ class SDL2Sprite(SDL2BaseSprite):
         super().__init__(prsa, *groups, **kwargs)
         self.image = texture
         self.rect = texture.get_rect(center=self.prsa.pos)
-
-
-class SDL2AnimSprite(SDL2BaseSprite):
-    image: sdl2.Texture | AutoSequence[sdl2.Texture] = AutoSequencer()
-
-    def __init__(self, prsa: PRSA, textures: Sequence[sdl2.Texture],
-                 *groups: tuple[pygame.sprite.Group],
-                 duration=1) -> None:
-        super().__init__(prsa, textures[0])
-        self.prsa = prsa
-        self.image = AutoSequence(textures, duration)
