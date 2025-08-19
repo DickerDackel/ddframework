@@ -5,7 +5,12 @@ __all__ = ['cache', 'Cache', 'add', 'get', 'get_all']
 
 _cache = {}
 
+
 class Cache(UserDict):
+    def __missing__(self, key):
+        self.data[key] = self.__class__()
+        return self.data[key]
+
     def __setitem__(self, key, item):
         if key in self.data:
             raise RuntimeError('Overwriting an existing item is not allowed.  Use `replace()`')
