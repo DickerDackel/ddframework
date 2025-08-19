@@ -14,13 +14,13 @@ from pygame.typing import ColorLike, Point
 from pygame.math import remap
 
 from ddframework.msgbroker import broker
-from ddframework.statemachine import StateMachine
+from ddframework.profiler import Profiler
+from ddframework.statemachine import StateMachine, StateWalker
 
 __all__ = ['App', 'GameState', 'StackPermissions', 'StateExit']
 
 
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s %(levelname)-12s  %(message)s',
+logging.basicConfig(format='%(asctime)s %(levelname)-12s  %(message)s',
                     datefmt='%F %T')
 
 
@@ -43,10 +43,10 @@ class StateExit(Exception):
 
 
 class GameState(ABC):
-    def __init__(self, app: 'App'):
+    def __init__(self, app: 'App') -> None:
         self.app: 'App' = app
 
-    def reset(self, *args, **kwargs) -> None:
+    def reset(self, *args: Any, **kwargs: Any) -> None:
         pass
 
     def restart(self, from_state: 'GameState', result: Any) -> None:
@@ -95,6 +95,8 @@ class App:
                 input_focus=True,
                 mouse_focus=True,
             )
+        if title is not None:
+            window.title = title
 
         self.window = window
 
@@ -114,28 +116,39 @@ class App:
         self.running = True
 
         self.broker = broker
+        self.profiler = Profiler()
 
         self.state_stack = []
 
-    def run(self, walker) -> None:
+    def run(self, walker: StateWalker, perftrace: bool = False, stats: bool = False) -> None:
         self.push(walker, StackPermissions.NONE)
 
-        while self.state_stack:
-            dt = min(self.clock.tick(self.fps) / 1000.0, self.dt_max)
+        with self.profiler.profile('total'):
+            while self.state_stack:
+                dt = min(self.clock.tick(self.fps) / 1000.0, self.dt_max)
 
-            # This must happen here and not in the states due state stacking
-            if self.do_clear:
-                self.renderer.draw_color = self.bgcolor
-                self.renderer.clear()
+                # This must happen here and not in the states due state stacking
+                with self.profiler.profile('cls'):
+                    if self.do_clear:
+                        self.renderer.draw_color = self.bgcolor
+                        self.renderer.clear()
 
-            try:
-                self.dispatch_events()
-                self.update(dt)
-                self.draw()
-            except StateExit as e:
-                self.transition(e.args if len(e.args) else None)
+                try:
+                    with self.profiler.profile('events'): self.dispatch_events()
+                    with self.profiler.profile('update'): self.update(dt)
+                    with self.profiler.profile('draw'):   self.draw()
+                except StateExit as e:
+                    self.transition(e.args if len(e.args) else None)
 
-            self.renderer.present()
+                self.renderer.present()
+
+                if perftrace:
+                    print('events', self.profiler['events'])
+                    print('update', self.profiler['update'])
+                    print('draw', self.profiler['draw'], flush=True)
+        if stats:
+            for _, prof_data in self.profiler.items():
+                print(prof_data, flush=True)
 
     def dispatch_events(self) -> None:
         for e in pygame.event.get():
