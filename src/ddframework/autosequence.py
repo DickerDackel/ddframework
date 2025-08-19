@@ -10,7 +10,7 @@ without the need of an explicit `call`.
 
 from collections import UserList
 from collections.abc import Sequence
-from typing import Generator, Generic, Self, Type, TypeVar, overload
+from typing import Any, Callable, Generator, Generic, Self, Type, TypeVar, overload
 
 from pgcooldown import LerpThing
 
@@ -27,11 +27,14 @@ class AutoSequence(UserList):
     lt: LerpThing
 
     def __init__(self, items: Sequence[T],
-                 duration: float = 1.0, repeat: int = 1, loops: int = -1) -> None:
+                 duration: float = 1.0, repeat: int = 1, loops: int = -1,
+                 ease: Callable = None) -> None:
         super().__init__(items)
 
-        self.lt = LerpThing(0, len(items), duration, repeat=repeat, loops=loops)
-        # Change vt1 on insert/remove
+        if ease:
+            self.lt = LerpThing(0, len(items), duration, repeat=repeat, loops=loops, ease=None)
+        else:
+            self.lt = LerpThing(0, len(items), duration, repeat=repeat, loops=loops)
 
     def __call__(self) -> object:
         if self.lt.finished():
@@ -49,26 +52,42 @@ class AutoSequence(UserList):
         else:
             raise StopIteration
 
+    def _update_lerpthing(self) -> None:
+        if self.lt.vt0 > self.lt.vt1:
+            self.lt.vt0 = len(self.data)
+        else:
+            self.lt.vt1 = len(self.data)
+
     def append(self, item: object) -> None:
         super().append(item)
+        self._update_lerpthing()
 
     def insert(self, i: int, item: object) -> None:
         super().insert(item)
+        self._update_lerpthing()
 
     def pop(self, i: int = -1) -> object:
-        return self.data.pop(i)
+        res = self.data.pop()
+        self._update_lerpthing()
+        return res
 
     def remove(self, item: object) -> None:
         super().remove(item)
+        self._update_lerpthing()
 
     def clear(self) -> None:
         self.data.clear()
+        self._update_lerpthing()
 
     def extend(self, other: Sequence[object]) -> None:
         if isinstance(other, UserList):
             self.data.extend(other.data)
         else:
             self.data.extend(other)
+        self._update_lerpthing()
+
+    def reset(self, *args: Any, **kwargs: Any) -> None:
+        self.lt.reset(*args, **kwargs)
 
 
 class AutoSequencer(Generic[T]):
@@ -79,7 +98,7 @@ class AutoSequencer(Generic[T]):
         class Sprite(pygame.sprite.Sprite):
             image: pygame.surface.Surface = AutoSequence(repeat=True)
             def __init__(self,
-                         image_list: list[pygame.surface.Surface,
+                         image_list: list[pygame.surface.Surface],
                          duration: float = 1) -> None:
                 super().__init__()
                 self.image = (image_list, duration)
@@ -109,4 +128,3 @@ class AutoSequencer(Generic[T]):
     def __get__(self, obj, objtype):
         if obj is None: return self
         return obj.__getattribute__(self.attrib)()
-
