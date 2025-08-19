@@ -30,6 +30,9 @@ class PRSA:
         yield self.scale
         yield self.alpha
 
+    def __repr__(self) -> str:
+        return f'PRSA(pos={self.pos}, rotation={self.rotation}, scale={self.scale}, alpha={self.alpha})'
+
 
 class SDL2Group(pygame.sprite.Group):
     def draw(self, *args: tuple[object], **kwargs: dict[str, object]) -> None:
