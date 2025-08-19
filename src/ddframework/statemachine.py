@@ -1,7 +1,9 @@
-from typing import Hashable, Generator, Iterator
+from typing import Hashable, Generator
 
 
 __all__ = ['StateMachine']
+
+StateWalker = Generator[Hashable, Hashable, None]
 
 
 class EmptyGraph(Exception): pass
@@ -82,7 +84,7 @@ class StateMachine:
 
         self.states[state] = followups
 
-    def walker(self, entry: Hashable = None) -> Generator[Hashable, Hashable, None]:
+    def walker(self, entry: Hashable = None) -> StateWalker:
         """Create a state walker.
 
             walker = sm.walker(initial_state)
