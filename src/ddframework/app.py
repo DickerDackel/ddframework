@@ -24,9 +24,24 @@ logging.basicConfig(format='%(asctime)s %(levelname)-12s  %(message)s',
                     datefmt='%F %T')
 
 
-def _viewports_remap(r1: pygame.Rect, r2: pygame.Rect, pos: Point) -> tuple[float, float]:
-    return (remap(0, r1.width, 0, r2.width, pos[0]),
-            remap(0, r1.height, 0, r2.height, pos[1]))
+def _size_to_window(scale, p):
+    return (p[0] * scale[0],
+            p[1] * scale[1])
+
+
+def _size_from_window(scale, p):
+    return (p[0] / scale[0],
+            p[1] / scale[1])
+
+
+def _coordinates_to_window(viewport, scale, p):
+    return ((p[0] + viewport.left) * scale[0],
+            (p[1] + viewport.top) * scale[1])
+
+
+def _coordinates_from_window(viewport, scale, p):
+    return (p[0] / scale[0] - viewport.left,
+            p[1] / scale[1] - viewport.top)
 
 
 class StackPermissions(IntEnum):
@@ -108,8 +123,12 @@ class App:
 
         self.window_rect = pygame.Rect((0, 0), window.size)
         self.logical_rect = pygame.Rect((0, 0), self.renderer.logical_size)
-        self.window_to_logical = partial(_viewports_remap, self.window_rect, self.logical_rect)
-        self.logical_to_window = partial(_viewports_remap, self.logical_rect, self.window_rect)
+        self.viewport = self.renderer.get_viewport()
+
+        self.coordinates_from_window = partial(_coordinates_from_window, self.viewport, self.renderer.scale)
+        self.coordinates_to_window = partial(_coordinates_to_window, self.viewport, self.renderer.scale)
+        self.size_to_window = partial(_size_to_window, self.renderer.scale)
+        self.size_from_window = partial(_size_from_window, self.renderer.scale)
 
         self.clock = pygame.time.Clock()
         self.dt_max = 3 / fps
