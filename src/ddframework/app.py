@@ -11,7 +11,6 @@ import pygame
 import pygame._sdl2 as sdl2
 
 from pygame.typing import ColorLike, Point
-from pygame.math import remap
 
 from ddframework.msgbroker import broker
 from ddframework.profiler import Profiler
@@ -165,6 +164,7 @@ class App:
                     print('events', self.profiler['events'])
                     print('update', self.profiler['update'])
                     print('draw', self.profiler['draw'], flush=True)
+
         if stats:
             for _, prof_data in self.profiler.items():
                 print(prof_data, flush=True)
