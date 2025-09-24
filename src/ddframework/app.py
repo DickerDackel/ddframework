@@ -164,6 +164,9 @@ class App:
                 print(prof_data, flush=True)
 
     def dispatch_events(self) -> None:
+        self.mouse = self.coordinates_from_window(pygame.mouse.get_pos())
+        self.keys = pygame.key.get_pressed()
+
         for e in pygame.event.get():
             states = (entry.state
                       for i, entry in enumerate(self.state_stack[:-1])
