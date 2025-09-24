@@ -37,7 +37,7 @@ class GridLayout:
     cell_margin_y: int = 0
 
     def __post_init__(self):
-        self.steps_x = (self.canvas.width - 2 * self.margin_x) / self.cells_x 
+        self.steps_x = (self.canvas.width - 2 * self.margin_x) / self.cells_x
         self.steps_y = (self.canvas.height - 2 * self.margin_y) / self.cells_y
 
     def __getattr__(self, name):
