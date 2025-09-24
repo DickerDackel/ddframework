@@ -41,10 +41,10 @@ class GridLayout:
         self.steps_y = (self.canvas.height - 2 * self.margin_y) / self.cells_y
 
     def __getattr__(self, name):
-        if name in ['x', 'y', 'top', 'left', 'bottom', 'right', 'topleft',
+        if name in {'x', 'y', 'top', 'left', 'bottom', 'right', 'topleft',
                     'bottomleft', 'topright', 'bottomright', 'midtop',
                     'midleft', 'midbottom', 'midright', 'center', 'centerx',
-                    'centery', 'size', 'width', 'height', 'w', 'h']:
+                    'centery', 'size', 'width', 'height', 'w', 'h'}:
             return getattr(self.canvas, name)
         elif name in self.__dict__:
             return self.__dict__[name]
@@ -52,10 +52,10 @@ class GridLayout:
             raise AttributeError(f"'GridLayout' object has no attribute '{name}'")
 
     def __setattr__(self, name, value):
-        if name in ['x', 'y', 'top', 'left', 'bottom', 'right', 'topleft',
+        if name in {'x', 'y', 'top', 'left', 'bottom', 'right', 'topleft',
                     'bottomleft', 'topright', 'bottomright', 'midtop',
                     'midleft', 'midbottom', 'midright', 'center', 'centerx',
-                    'centery', 'size', 'width', 'height', 'w', 'h']:
+                    'centery', 'size', 'width', 'height', 'w', 'h'}:
             setattr(self.canvas, name, value)
         else:
             self.__dict__[name] = value
