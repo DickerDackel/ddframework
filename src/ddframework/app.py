@@ -1,5 +1,3 @@
-import logging
-
 from abc import ABC, abstractmethod
 from collections.abc import Iterator
 from dataclasses import dataclass
@@ -17,10 +15,6 @@ from ddframework.profiler import Profiler
 from ddframework.statemachine import StateMachine, StateWalker
 
 __all__ = ['App', 'GameState', 'StackPermissions', 'StateExit']
-
-
-logging.basicConfig(format='%(asctime)s %(levelname)-12s  %(message)s',
-                    datefmt='%F %T')
 
 
 def _size_to_window(scale, p):
