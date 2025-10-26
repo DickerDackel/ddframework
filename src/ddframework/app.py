@@ -1,5 +1,3 @@
-import logging
-
 from abc import ABC, abstractmethod
 from collections.abc import Iterator
 from dataclasses import dataclass
@@ -17,10 +15,6 @@ from ddframework.profiler import Profiler
 from ddframework.statemachine import StateMachine, StateWalker
 
 __all__ = ['App', 'GameState', 'StackPermissions', 'StateExit']
-
-
-logging.basicConfig(format='%(asctime)s %(levelname)-12s  %(message)s',
-                    datefmt='%F %T')
 
 
 def _size_to_window(scale, p):
@@ -170,6 +164,9 @@ class App:
                 print(prof_data, flush=True)
 
     def dispatch_events(self) -> None:
+        self.mouse = self.coordinates_from_window(pygame.mouse.get_pos())
+        self.keys = pygame.key.get_pressed()
+
         for e in pygame.event.get():
             states = (entry.state
                       for i, entry in enumerate(self.state_stack[:-1])
