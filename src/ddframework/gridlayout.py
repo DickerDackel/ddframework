@@ -39,6 +39,7 @@ class GridLayout:
     def __post_init__(self):
         self.steps_x = (self.canvas.width - 2 * self.margin_x) / self.cells_x
         self.steps_y = (self.canvas.height - 2 * self.margin_y) / self.cells_y
+        self.grid = self.canvas.inflate(-2 * self.margin_x, -2 * self.margin_y)
 
     def __getattr__(self, name):
         if name in {'x', 'y', 'top', 'left', 'bottom', 'right', 'topleft',
@@ -84,8 +85,8 @@ class GridLayout:
 
         """
         res_x = self.canvas.left + self.margin_x + x * self.steps_x
-        res_y = self.canvas.left + self.margin_y + y * self.steps_y
-        rect = pygame.Rect(res_x, res_y, w * self.steps_x, h * self.steps_y).inflate(-self.cell_margin_x, -self.cell_margin_y)
+        res_y = self.canvas.top + self.margin_y + y * self.steps_y
+        rect = pygame.Rect(res_x, res_y, w * self.steps_x, h * self.steps_y).inflate(-2 * self.cell_margin_x, -2 * self.cell_margin_y)
 
         return rect
 
