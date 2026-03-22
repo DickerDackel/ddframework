@@ -2,6 +2,20 @@ import pygame
 
 from pygame.math import Vector2
 
+# How the lerping in decasteljau works comes from the Freya Holmer talk about
+# splines and is also visualized in the Wikipedia article about Bezier Curves:
+#
+#   https://www.youtube.com/watch?v=aVwxzDHniEw
+#   https://www.youtube.com/watch?v=jvPPXbo87ds
+#   https://en.wikipedia.org/wiki/B%C3%A9zier_curve#Constructing_B%C3%A9zier_curves
+#
+# The bernstein polynomials come from the wikipedia article:
+#
+#   https://en.wikipedia.org/wiki/Bernstein_polynomial#Bernstein_polynomials
+#
+# The Berstein variants are the polynomal solution of the lerped functions and
+# result in the same curve
+
 
 def quadratic_bezier_decasteljau(t, p0, p1, p2):
     """return the quad bezier in p0/p1/p2 at time t
@@ -25,7 +39,7 @@ def quadratic_bezier_decasteljau(t, p0, p1, p2):
     return p
 
 
-def quadratic_bezier_bernstein(t, p0, p1, p2, p3):
+def quadratic_bezier_bernstein(t, p0, p1, p2):
     """return the quad bezier in p0/p1/p2 at time t
 
         quadratic_bezier_bernstein(t, p0, p1, p2) -> Vector2
@@ -42,8 +56,11 @@ def quadratic_bezier_bernstein(t, p0, p1, p2, p3):
     # cache
     t2 = t * t
 
+    # b0,2(x) = 1 - 2 x + 1x^2
+    # b1,2(x) = 0 + 2x - 2x^2
+    # b2,2(x) = 0 + 0x + 1x^2
     p = (  v0 * (1 - 2 * t + t2)
-         + v1 * (2 * t - t2)
+         + v1 * (2 * t - 2 * t2)
          + v2 * t2)
 
     return p
