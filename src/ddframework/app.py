@@ -127,6 +127,8 @@ class App:
         self.dt_max = 3 / fps
         self.running = True
 
+        self.current_fps = 0
+
         self.broker = broker
         self.profiler = Profiler()
 
@@ -138,6 +140,7 @@ class App:
         with self.profiler.profile('total'):
             while self.state_stack:
                 dt = min(self.clock.tick(self.fps) / 1000.0, self.dt_max)
+                self.current_fps = self.clock.get_fps()
 
                 # This must happen here and not in the states due state stacking
                 with self.profiler.profile('cls'):
