@@ -4,7 +4,7 @@ from typing import Hashable, Type
 
 import pygame._sdl2 as sdl2
 
-from pygame import Vector2 as vec2
+from glm import vec2
 from pygame.typing import Point
 
 import pygame
