@@ -1,6 +1,6 @@
 import pygame
 
-from pygame.math import Vector2
+from glm import vec2
 
 # How the lerping in decasteljau works comes from the Freya Holmer talk about
 # splines and is also visualized in the Wikipedia article about Bezier Curves:
@@ -17,20 +17,38 @@ from pygame.math import Vector2
 # result in the same curve
 
 
+# Stolen from Lucysir/kadir014
+def catmull_rom(t: float, p0: vec2, p1: vec2, p2: vec2, p3: vec2) -> vec2:
+    t2 = t * t
+    t3 = t2 * t
+
+    x = 0.5 * ((2.0 * p1.x) +
+              (-p0.x + p2.x) * t +
+              (2.0 * p0.x - 5.0 * p1.x + 4.0 * p2.x - p3.x) * t2 +
+              (-p0.x + 3.0 * p1.x - 3.0 * p2.x + p3.x) * t3)
+
+    y = 0.5 * ((2 * p1.y) +
+              (-p0.y + p2.y) * t +
+              (2.0 * p0.y - 5.0 * p1.y + 4.0 * p2.y - p3.y) * t2 +
+              (-p0.y + 3.0 * p1.y - 3.0 * p2.y + p3.y) * t3)
+
+    return vec2(x, y)
+
+
 def quadratic_bezier_decasteljau(t, p0, p1, p2):
     """return the quad bezier in p0/p1/p2 at time t
 
-        quadratic_bezier_decasteljau(t, p0, p1, p2) -> Vector2
+        quadratic_bezier_decasteljau(t, p0, p1, p2) -> vec2
 
     Arguments:
 
         t               Time within the spline 0.0 <= t <= 1
-        p0, p1, p2      The spline's control points (Vector2)
+        p0, p1, p2      The spline's control points (vec2)
     """
 
-    v0 = Vector2(p0)
-    v1 = Vector2(p1)
-    v2 = Vector2(p2)
+    v0 = vec2(p0)
+    v1 = vec2(p1)
+    v2 = vec2(p2)
 
     a = v0.lerp(v1, t)
     b = v1.lerp(v2, t)
@@ -42,16 +60,16 @@ def quadratic_bezier_decasteljau(t, p0, p1, p2):
 def quadratic_bezier_bernstein(t, p0, p1, p2):
     """return the quad bezier in p0/p1/p2 at time t
 
-        quadratic_bezier_bernstein(t, p0, p1, p2) -> Vector2
+        quadratic_bezier_bernstein(t, p0, p1, p2) -> vec2
 
     Arguments:
 
         t               Time within the spline 0.0 <= t <= 1
-        p0, p1, p2      The spline's control points (Vector2)
+        p0, p1, p2      The spline's control points (vec2)
     """
-    v0 = Vector2(p0)
-    v1 = Vector2(p1)
-    v2 = Vector2(p2)
+    v0 = vec2(p0)
+    v1 = vec2(p1)
+    v2 = vec2(p2)
 
     # cache
     t2 = t * t
@@ -69,17 +87,17 @@ def quadratic_bezier_bernstein(t, p0, p1, p2):
 def cubic_bezier_decasteljau(t, p0, p1, p2, p3):
     """return the quad bezier in p0/p1/p2 at time t
 
-        cubic_bezier(t, p0, p1, p2, p3) -> Vector2
+        cubic_bezier(t, p0, p1, p2, p3) -> vec2
 
     Arguments:
 
         t               Time within the spline 0.0 <= t <= 1
-        p0, p1, p2, p3  The spline's control points (Vector2)
+        p0, p1, p2, p3  The spline's control points (vec2)
     """
-    v0 = Vector2(p0)
-    v1 = Vector2(p1)
-    v2 = Vector2(p2)
-    v3 = Vector2(p3)
+    v0 = vec2(p0)
+    v1 = vec2(p1)
+    v2 = vec2(p2)
+    v3 = vec2(p3)
 
     a = v0.lerp(v1, t)
     b = v1.lerp(v2, t)
@@ -94,17 +112,17 @@ def cubic_bezier_decasteljau(t, p0, p1, p2, p3):
 def cubic_bezier_bernstein(t, p0, p1, p2, p3):
     """return the quad bezier in p0/p1/p2 at time t
 
-        cubic_bezier(t, p0, p1, p2, p3) -> Vector2
+        cubic_bezier(t, p0, p1, p2, p3) -> vec2
 
     Arguments:
 
         t               Time within the spline 0.0 <= t <= 1
-        p0, p1, p2, p3  The spline's control points (Vector2)
+        p0, p1, p2, p3  The spline's control points (vec2)
     """
-    v0 = Vector2(p0)
-    v1 = Vector2(p1)
-    v2 = Vector2(p2)
-    v3 = Vector2(p3)
+    v0 = vec2(p0)
+    v1 = vec2(p1)
+    v2 = vec2(p2)
+    v3 = vec2(p3)
 
     # cache
     t2 = t * t
