@@ -65,7 +65,8 @@ class SDL2BaseSprite(pygame.sprite.Sprite):
 class SDL2Sprite(SDL2BaseSprite):
     def __init__(self, prsa: PRSA, texture: sdl2.Texture,
                  *groups: list[pygame.sprite.Group],
+                 dstrect: pygame.Rect = None,
                  **kwargs: dict[Hashable, object]) -> None:
         super().__init__(prsa, *groups, **kwargs)
         self.image = texture
-        self.rect = texture.get_rect(center=self.prsa.pos)
+        self.rect = texture.get_rect(center=self.prsa.pos) if dstrect is None else dstrect
