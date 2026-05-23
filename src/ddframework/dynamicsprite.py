@@ -19,7 +19,7 @@ class PRSA:
 
     def __init__(self, pos: Point | None = None,
                  rotation: float = 0, scale: Sequence[float] | float = 1, alpha: float = 255) -> None:
-        self.pos = vec2(pos)
+        self.pos = vec2(pos) if pos is not None else vec2()
         self.rotation = rotation
         self.scale = scale
         self.alpha = alpha
