@@ -18,11 +18,15 @@ def random_vector(length: float = 1) -> glm.vec2:
     return glm.rotate(v, angle)
 
 
-def xpath(dict_: dict, path: str):
+def xpath(dict_: dict, path: str, early=False):
     """Return the value in dict_ described by path (separated by `.`)"""
 
     res = dict_
     for k in path.split('.'):
-        res = res[k]
+        try:
+            res = res[k]
+        except TypeError, KeyError:
+            if early: return res
+            raise
 
     return res
