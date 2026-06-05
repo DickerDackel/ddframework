@@ -3,6 +3,12 @@ from random import random
 import glm
 
 
+def angle_of(v: glm.vec2) -> float:
+    """Return the angle of the given vector in degrees"""
+
+    return glm.degrees(glm.atan2(v.y, v.x))
+
+
 def random_vector(length: float = 1) -> glm.vec2:
     """Return a random vec2 with the given length"""
 
