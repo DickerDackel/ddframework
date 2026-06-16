@@ -4,7 +4,12 @@ import glm
 
 
 def angle_of(v: glm.vec2) -> float:
-    """Return the angle of the given vector in degrees"""
+    """Return the angle of ``v`` in degrees, since glm lacks that.
+
+    :param v: The vector in question
+    :return: Angle of ``v`` in degrees
+
+    """
 
     return glm.degrees(glm.atan2(v.y, v.x))
 
