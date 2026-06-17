@@ -128,6 +128,7 @@ class App:
         self.running = True
 
         self.current_fps = 0
+        self.current_ticks = pygame.time.get_ticks() / 1000.0
 
         self.broker = broker
         self.profiler = Profiler()
@@ -141,6 +142,7 @@ class App:
             while self.state_stack:
                 dt = min(self.clock.tick(self.fps) / 1000.0, self.dt_max)
                 self.current_fps = self.clock.get_fps()
+                self.current_ticks = pygame.time.get_ticks() / 1000.0
 
                 # This must happen here and not in the states due state stacking
                 with self.profiler.profile('cls'):
