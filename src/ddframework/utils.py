@@ -30,7 +30,7 @@ def chunks(start: float, end: float, steps: int) -> Iterator[float]:
 
     """
     steps -= 1
-    step = (end - start) / steps
+    step = (end - start) / steps if steps else 0
     for i in range(steps):
         yield start + step * i
 
