@@ -11,14 +11,16 @@ class Cache(UserDict):
         self.data[key] = self.__class__()
         return self.data[key]
 
-    def __setitem__(self, key, item):
-        if key in self.data:
-            raise RuntimeError('Overwriting an existing item is not allowed.  Use `replace()`')
-
-        super().__setitem__(key, item)
-
-    def replace(self, key, item):
-        self.data[key] = item
+    # ?!? WHY ?!?
+    #
+    # def __setitem__(self, key, item):
+    #     if key in self.data:
+    #         raise RuntimeError('Overwriting an existing item is not allowed.  Use `replace()`')
+    #
+    #     super().__setitem__(key, item)
+    #
+    # def replace(self, key, item):
+    #     self.data[key] = item
 
     def get_all(self, *names):
         if len(names) == 1:
@@ -29,37 +31,24 @@ class Cache(UserDict):
     def has(self, *names):
         return all(key in self.data for key in names)
 
+    def xpath(self, path: str, early=False) -> object:
+        """Return the value in dict_ described by path (separated by `.`)
+
+        :param path: Inspired by xpath, the path into the dictionary
+        :param early: If the path can't be followed up to the end, still return what already matched
+        :return: The cached object
+
+        """
+
+        res = self.data
+        for k in path.split('.'):
+            try:
+                res = res[k]
+            except TypeError, KeyError:
+                if early: return res
+                raise
+
+        return res
+
+
 cache = Cache()
-
-
-def add(obj, name):
-    """Adds or overwrites a cache entry."""
-    _cache[name] = obj
-
-
-def rm(name):
-    """Removes name from the cache."""
-    try:
-        del _cache[name]
-    except KeyError:
-        return False
-    else:
-        return True
-
-
-def get(name):
-    """Get name from the cache."""
-    try:
-        return _cache[name]
-    except KeyError:
-        return None
-
-
-def get_all(names):
-    """Get all names from cache in a list."""
-    return (get(name) for name in names)
-
-
-def has(*names):
-    """Check if all names are in the cache."""
-    return all(name in _cache for name in names)
