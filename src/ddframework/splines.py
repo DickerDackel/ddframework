@@ -1,6 +1,6 @@
 import pygame
 
-from glm import vec2
+from glm import lerp, vec2
 
 # How the lerping in decasteljau works comes from the Freya Holmer talk about
 # splines and is also visualized in the Wikipedia article about Bezier Curves:
@@ -50,9 +50,9 @@ def quadratic_bezier_decasteljau(t, p0, p1, p2):
     v1 = vec2(p1)
     v2 = vec2(p2)
 
-    a = v0.lerp(v1, t)
-    b = v1.lerp(v2, t)
-    p = a.lerp(b, t)
+    a = lerp(v0, v1, t)
+    b = lerp(v1, v2, t)
+    p = lerp(a, b, t)
 
     return p
 
@@ -99,12 +99,12 @@ def cubic_bezier_decasteljau(t, p0, p1, p2, p3):
     v2 = vec2(p2)
     v3 = vec2(p3)
 
-    a = v0.lerp(v1, t)
-    b = v1.lerp(v2, t)
-    c = v2.lerp(v3, t)
-    d = a.lerp(b, t)
-    e = b.lerp(c, t)
-    p = d.lerp(e, t)
+    a = lerp(v0, v1, t)
+    b = lerp(v1, v2, t)
+    c = lerp(v2, v3, t)
+    d = lerp(a, b, t)
+    e = lerp(b, c, t)
+    p = lerp(d, e, t)
 
     return p
 
