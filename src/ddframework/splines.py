@@ -109,6 +109,27 @@ def cubic_bezier_decasteljau(t, p0, p1, p2, p3):
     return p
 
 
+def cubic_bezier_decasteljau_normal(t, p0, p1, p2, p3):
+    # B'(t) = 3(1-t)² (P₁ - P₀) + 6t(1-t) (P₂ - P₁) + 3t² (P₃ - P₂)
+    v0 = vec2(p0)
+    v1 = vec2(p1)
+    v2 = vec2(p2)
+    v3 = vec2(p3)
+
+    # cache
+    t2 = t * t
+
+    d10 = v1 - v0
+    d21 = v2 - v1
+    d32 = v3 - v2
+
+    m = ((3 - 6 * t + 3 * t2) * d10
+         + (6 * t - 6 * t2) * d21
+         + 3 * t2 * d32)
+
+    return m
+
+
 def cubic_bezier_bernstein(t, p0, p1, p2, p3):
     """return the quad bezier in p0/p1/p2 at time t
 
