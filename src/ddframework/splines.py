@@ -1,6 +1,6 @@
 import pygame
 
-from glm import lerp, vec2
+from glm import lerp, normalize, vec2
 
 # How the lerping in decasteljau works comes from the Freya Holmer talk about
 # splines and is also visualized in the Wikipedia article about Bezier Curves:
@@ -35,15 +35,16 @@ def catmull_rom(t: float, p0: vec2, p1: vec2, p2: vec2, p3: vec2) -> vec2:
     return vec2(x, y)
 
 
-def quadratic_bezier_decasteljau(t, p0, p1, p2):
-    """return the quad bezier in p0/p1/p2 at time t
+def quadratic_bezier_decasteljau(t: float, p0: vec2, p1: vec2, p2: vec2, with_momentum: bool = False):
+    """return the quadratic bezier in p0/p1/p2 at time t.
 
-        quadratic_bezier_decasteljau(t, p0, p1, p2) -> vec2
+    :param t: The lerp time from 0-1
+    :param p0: First control point of the spline
+    :param p1: Second control point of the spline
+    :param p2: Third control point of the spline
+    :param with_momentum: If true, return a point, momentum tuple instead of just the point
+    :return: Depending on with_momentum, the spline point, or a point, momentum tuple
 
-    Arguments:
-
-        t               Time within the spline 0.0 <= t <= 1
-        p0, p1, p2      The spline's control points (vec2)
     """
 
     v0 = vec2(p0)
@@ -54,7 +55,10 @@ def quadratic_bezier_decasteljau(t, p0, p1, p2):
     b = lerp(v1, v2, t)
     p = lerp(a, b, t)
 
-    return p
+    if with_momentum:
+        return p, normalize(b - a)
+    else:
+        return p
 
 
 def quadratic_bezier_bernstein(t, p0, p1, p2):
@@ -84,16 +88,19 @@ def quadratic_bezier_bernstein(t, p0, p1, p2):
     return p
 
 
-def cubic_bezier_decasteljau(t, p0, p1, p2, p3):
-    """return the quad bezier in p0/p1/p2 at time t
+def cubic_bezier_decasteljau(t: float, p0: vec2, p1: vec2, p2: vec2, p3: vec2, with_momentum: bool = False):
+    """return the quad bezier in p0/p1/p2/p3 at time t.
 
-        cubic_bezier(t, p0, p1, p2, p3) -> vec2
+    :param t: The lerp time from 0-1
+    :param p0: First control point of the spline
+    :param p1: Second control point of the spline
+    :param p2: Third control point of the spline
+    :param p3: Fourth control point of the spline
+    :param with_momentum: If true, return a point, momentum tuple instead of just the point
+    :return: Depending on with_momentum, the spline point, or a point, momentum tuple
 
-    Arguments:
-
-        t               Time within the spline 0.0 <= t <= 1
-        p0, p1, p2, p3  The spline's control points (vec2)
     """
+
     v0 = vec2(p0)
     v1 = vec2(p1)
     v2 = vec2(p2)
@@ -106,7 +113,10 @@ def cubic_bezier_decasteljau(t, p0, p1, p2, p3):
     e = lerp(b, c, t)
     p = lerp(d, e, t)
 
-    return p
+    if with_momentum:
+        return p, normalize(e - d)
+    else:
+        return p
 
 
 def cubic_bezier_decasteljau_normal(t, p0, p1, p2, p3):
