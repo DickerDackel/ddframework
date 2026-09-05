@@ -50,5 +50,22 @@ class Cache(UserDict):
 
         return res
 
+    def xpath_put(self, path: str, value: object) -> None:
+        """Insert values into the nested dict addressed by the xpath.
+
+        :param path: The dotted path into the dict
+        :param value: The value to insert
+
+        """
+
+        node = self.data
+        steps = path.split('.')
+        for k in steps[:-1]:
+            if k not in node:
+                node[k] = self.__class__()
+            node = node[k]
+
+        node[steps[-1]] = value
+
 
 cache = Cache()
