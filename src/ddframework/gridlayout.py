@@ -8,24 +8,19 @@ from dataclasses import dataclass
 
 @dataclass
 class GridLayout:
-    """Split the screen into cells of fixed size
+    """Access cells in a grid.
 
-        GridLayout(canvas_rect, cells_x, cells_y, margin_x=0, margin_y=0)
+    :param canvas: The dimensions of the canvas.
+    :param cells_x: Number of horizontal cells
+    :param cells_y: Number of vertical cells
+    :param margin_x: Left and right margin of the grid on the canvas
+    :param margin_y: Top and bottom margin of the grid on the canvas
+    :param cell_margin_x: Left and right margin of individual cells
+    :param cell_margin_y: Top and bottom margin of individual cells
 
-    Can return either cell positions as Rect, or grid positions as Vector2
+    The ``GridLayout`` supports assignment and reading of the same attributes
+    like a pygame.rect.Rect.
 
-    Parameters
-    ----------
-    canvas_rect: pygame.Rect
-        A rect like with the canvas dimensions
-
-    cells_x: int
-    cells_y: int
-        x and y steps to split the canvas into
-
-    margin_x: int
-    margin_y: int
-        a margin around the whole canvas
     """
 
     canvas: pygame.Rect
@@ -64,24 +59,19 @@ class GridLayout:
     def __call__(self, x, y, w=1, h=1):
         """Return a rectangle starting at the x, y cell coordinates, spanning over w, h cells
 
+        :param x: left most cell of the requested area
+        :param y: top most cell of the requested area
+        :param w: width of the requested area in cells
+        :param h: height of the requested area in cells
+        :return: pygame.Rect | None
+
+        .. code:: python
+
             grid = GridLayout(canvas, 10, 5)
-            rect = grid.cell(3, 3, 2, 1)
+            rect = grid(3, 3, 2, 1)
 
-
-        Parameters
-        ----------
-        x, y: int
-            cell position
-
-        w, h: int
-            width and height in cell steps
-
-        Returns
-        -------
-        pygame.Rect | None
-
-            if the requested segment doesn't completely fits on the canvas,
-            None is returned.
+        if the requested segment doesn't completely fit on the canvas, None
+        is returned.
 
         """
         res_x = self.canvas.left + self.margin_x + x * self.steps_x
@@ -93,29 +83,23 @@ class GridLayout:
     def offset(self, x, y, w=1, h=1):
         """Return the fragment offset within a requested cell
 
+
+        :param x: Horizontal cell number
+        :param y: Vertical cell number
+        :param w: Number of cells horizontally
+        :param h: Number of cells vertically
+        :returns: top-left coordinates of the given cell, or None if the cells
+            won't fit the canvas.
+
+        .. code:: python
+
             grid = GridLayout(canvas, 10, 5)
             rect = grid(3, 3, 2, 1)
             offset = grid.offset(3, 3, 2, 1)
 
-
-        Parameters
-        ----------
-        x, y: int
-            cell position
-
-        w, h: int
-            width and height in cell steps
-
-        Returns
-        -------
-        Tuple[float, float] | None
-
-            if the requested segment doesn't completely fits on the canvas,
-            None is returned.
-
         """
         frac_x = (x - int(x)) * self.steps_x
-        frac_y = (y - int(x)) * self.steps_y
+        frac_y = (y - int(y)) * self.steps_y
 
         return frac_x, frac_y
 
@@ -124,24 +108,19 @@ class GridLayout:
     def cell(self, world_x, world_y):
         """Return the cell position for the given world coordinates.
 
+        :param world_x: Horizontal screen position
+        :param world_y: Vertical screen position
+        :returns: cell coordinates as floats
+
+        .. note:: The result will be a float that includes the position within
+           the cell in the decimal places.
+
+        .. code:: python
+
             grid = GridLayout(canvas, 10, 5)
             mouse = pygame.mouse.get_pos()
             cell = grid.cell(mouse.x, mouse.y)
 
-        Note:
-
-            The result will be a float that includes the position within the
-            cell in the decimal places.
-
-        Parameters
-        ----------
-        world_x, world_y: int
-            screen position
-
-        Returns
-        -------
-        x, y: float
-            cell coordinates as float
         """
 
         span_x = world_x - self.margin_x
@@ -154,6 +133,8 @@ class GridLayout:
 
 
 def debug_grid(screen: pygame.Surface | sdl2.Renderer, grid: GridLayout, color: ColorLike = 'grey20'):
+    """Draw a grid covering all defined cells in the GridLayout."""
+
     if isinstance(screen, pygame.Surface):
         pygame.draw.rect(screen, color, screen.get_rect(), width=1)
         pygame.draw.rect(screen, color, grid(0, 0, grid.cells_x, grid.cells_y), width=1)
