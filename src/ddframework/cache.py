@@ -1,8 +1,5 @@
 from collections import UserDict
 
-
-__all__ = ['cache', 'Cache', 'add', 'get', 'get_all']
-
 _cache = {}
 
 
