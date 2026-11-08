@@ -31,6 +31,13 @@ class GridLayout:
     cell_margin_x: int = 0
     cell_margin_y: int = 0
 
+    @classmethod
+    def from_cells(cls, width, height, cell_size, *args, **kwargs):
+        print(f'{width=}  {height=}  {cell_size=}  {args=}  {kwargs=}')
+        rect = pygame.Rect(0, 0, width * cell_size, height * cell_size)
+        print(rect)
+        return cls(rect, width, height, *args, **kwargs)
+
     def __post_init__(self):
         self.steps_x = (self.canvas.width - 2 * self.margin_x) / self.cells_x
         self.steps_y = (self.canvas.height - 2 * self.margin_y) / self.cells_y
