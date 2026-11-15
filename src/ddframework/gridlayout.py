@@ -32,15 +32,24 @@ class GridLayout:
     cell_margin_y: int = 0
 
     @classmethod
-    def from_cells(cls, width, height, cell_size, *args, **kwargs):
-        print(f'{width=}  {height=}  {cell_size=}  {args=}  {kwargs=}')
-        rect = pygame.Rect(0, 0, width * cell_size, height * cell_size)
-        print(rect)
-        return cls(rect, width, height, *args, **kwargs)
+    def from_cells(cls, cells_x, cells_y, cell_size, *args, **kwargs):
+
+        canvas = pygame.Rect(0, 0, cells_x * cell_size, cells_y * cell_size)
+        return cls(canvas, cells_x, cells_y, *args, **kwargs)
+
+    @classmethod
+    def from_cellsize(cls, canvas, cell_size, *args, **kwargs):
+        bkp_size = canvas.size
+        cells_x = canvas.width // cell_size
+        cells_y = canvas.height // cell_size
+        canvas.size = (cells_x * cell_size, cells_y * cell_size)
+        inst = cls(canvas, cells_x, cells_y, *args, **kwargs)
+        inst.canvas.size = bkp_size
+        return inst
 
     def __post_init__(self):
-        self.steps_x = (self.canvas.width - 2 * self.margin_x) / self.cells_x
-        self.steps_y = (self.canvas.height - 2 * self.margin_y) / self.cells_y
+        self.cell_w = (self.canvas.width - 2 * self.margin_x) / self.cells_x
+        self.cell_h = (self.canvas.height - 2 * self.margin_y) / self.cells_y
         self.grid = self.canvas.inflate(-2 * self.margin_x, -2 * self.margin_y)
 
     def __getattr__(self, name):
@@ -81,9 +90,9 @@ class GridLayout:
         is returned.
 
         """
-        res_x = self.canvas.left + self.margin_x + x * self.steps_x
-        res_y = self.canvas.top + self.margin_y + y * self.steps_y
-        rect = pygame.Rect(res_x, res_y, w * self.steps_x, h * self.steps_y).inflate(-2 * self.cell_margin_x, -2 * self.cell_margin_y)
+        res_x = self.canvas.left + self.margin_x + x * self.cell_w
+        res_y = self.canvas.top + self.margin_y + y * self.cell_h
+        rect = pygame.Rect(res_x, res_y, w * self.cell_w, h * self.cell_h).inflate(-2 * self.cell_margin_x, -2 * self.cell_margin_y)
 
         return rect
 
@@ -105,8 +114,8 @@ class GridLayout:
             offset = grid.offset(3, 3, 2, 1)
 
         """
-        frac_x = (x - int(x)) * self.steps_x
-        frac_y = (y - int(y)) * self.steps_y
+        frac_x = (x - int(x)) * self.cell_w
+        frac_y = (y - int(y)) * self.cell_h
 
         return frac_x, frac_y
 
@@ -133,8 +142,8 @@ class GridLayout:
         span_x = world_x - self.margin_x
         span_y = world_y - self.margin_y
 
-        x = span_x / self.steps_x
-        y = span_y / self.steps_y
+        x = span_x / self.cell_w
+        y = span_y / self.cell_h
 
         return x, y
 
@@ -144,7 +153,8 @@ def debug_grid(screen: pygame.Surface | sdl2.Renderer, grid: GridLayout, color: 
 
     if isinstance(screen, pygame.Surface):
         pygame.draw.rect(screen, color, screen.get_rect(), width=1)
-        pygame.draw.rect(screen, color, grid(0, 0, grid.cells_x, grid.cells_y), width=1)
+        pygame.draw.rect(screen, color, grid.canvas, width=1)
+        print(grid.cell_h)
         for y in range(grid.cells_y):
             for x in range(grid.cells_x):
                 pygame.draw.rect(screen, color, grid(x, y, 1, 1), width=1)
