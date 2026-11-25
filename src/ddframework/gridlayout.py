@@ -154,7 +154,6 @@ def debug_grid(screen: pygame.Surface | sdl2.Renderer, grid: GridLayout, color: 
     if isinstance(screen, pygame.Surface):
         pygame.draw.rect(screen, color, screen.get_rect(), width=1)
         pygame.draw.rect(screen, color, grid.canvas, width=1)
-        print(grid.cell_h)
         for y in range(grid.cells_y):
             for x in range(grid.cells_x):
                 pygame.draw.rect(screen, color, grid(x, y, 1, 1), width=1)
