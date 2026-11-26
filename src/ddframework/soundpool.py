@@ -44,6 +44,13 @@ class SoundPool:
         return f'Channels: {states}'
 
 
+enabled = True
+
+def play_sound(sound, *args, **kwargs):
+    if not enabled: return None
+
+    return sound.play(*args, **kwargs)
+
 def pause_all_sounds():
     for c in soundpool:
         if c.get_busy():
